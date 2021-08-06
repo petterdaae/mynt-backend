@@ -1,0 +1,14 @@
+version: "3"
+services: 
+  database:
+    image: "postgres"
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=common
+    volumes:
+      - common-database-data:/var/lib/postgresql/data/
+volumes:
+  mynt-database-data:

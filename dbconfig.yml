@@ -1,0 +1,4 @@
+development:
+  dialect: postgres
+  datasource: dbname=mynt sslmode=disable user=postgres password=postgres
+  dir: sql
