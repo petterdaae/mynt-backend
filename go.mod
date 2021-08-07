@@ -3,6 +3,8 @@ module mynt
 go 1.14
 
 require (
+	github.com/auth0/go-jwt-middleware v1.0.1
+	github.com/form3tech-oss/jwt-go v3.2.3+incompatible
 	github.com/gin-gonic/gin v1.7.2
 	github.com/gobuffalo/packr/v2 v2.8.1
 	github.com/golang/protobuf v1.4.3 // indirect
