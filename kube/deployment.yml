@@ -26,6 +26,8 @@ spec:
               value: 'release'
             - name: PORT
               value: '80'
+            - name: ORIGIN
+              value: 'https://mynt.daae.dev'
             - name: POSTGRES_HOST
               valueFrom:
                   secretKeyRef:

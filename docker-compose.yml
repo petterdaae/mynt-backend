@@ -7,8 +7,8 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=common
+      - POSTGRES_DB=mynt
     volumes:
-      - common-database-data:/var/lib/postgresql/data/
+      - mynt-database-data:/var/lib/postgresql/data/
 volumes:
   mynt-database-data:
