@@ -1,5 +1,7 @@
 # mynt-backend
 
+- Authentication is set up with auth0. I followed [this guies](https://auth0.com/docs/quickstart/backend/golang#validate-access-tokens) when setting things up.
+
 ### Data model
 
 ```
