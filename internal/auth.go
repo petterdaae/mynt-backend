@@ -26,7 +26,7 @@ type JSONWebKeys struct {
 
 func getPemCert(token *jwt.Token) (string, error) {
 	cert := ""
-	resp, err := http.Get(os.Getenv("AUTH0_API_DOMAIN") + "/.well-known/jwks.json")
+	resp, err := http.Get(os.Getenv("AUTH0_API_DOMAIN") + ".well-known/jwks.json")
 
 	if err != nil {
 		return cert, err
@@ -72,7 +72,7 @@ func createJwtMiddleware() *jwtmiddleware.JWTMiddleware {
 				return token, errors.New("Invalid audience.")
 			}
 			// Verify 'iss' claim
-			iss := os.Getenv("AUTH0_CLIENT_ID")
+			iss := os.Getenv("AUTH0_API_DOMAIN")
 			checkIss := token.Claims.(jwt.MapClaims).VerifyIssuer(iss, false)
 			if !checkIss {
 				return token, errors.New("Invalid issuer.")
