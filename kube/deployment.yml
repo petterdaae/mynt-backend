@@ -31,7 +31,7 @@ spec:
             - name: AUTH0_API_IDENTIFIER
               value: 'mynt-production'
             - name: AUTH0_API_DOMAIN
-              value: 'dev-sjffsr1q.us.auth0.com'
+              value: 'https://dev-sjffsr1q.us.auth0.com/'
             - name: POSTGRES_HOST
               valueFrom:
                   secretKeyRef:
