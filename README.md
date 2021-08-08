@@ -3,8 +3,14 @@
 ### Data model
 
 ```
+User (
+  id
+  email
+)
+
 Account (
   id
+  user_id
   external_id
   name
   amount
@@ -12,6 +18,7 @@ Account (
 
 Transaction (
   id
+  user_id
   external_id
   account_id
   original_description
@@ -24,6 +31,7 @@ Transaction (
 
 Category (
   id
+  user_id
   name
   parent_category
   monthly_planned_amount
@@ -47,3 +55,5 @@ Category (
   - `POST` insert new category
 - `/categories/<category_id>`
   - `PUT` update category
+- `/sync`
+  - `POST` pull new transactions from banks

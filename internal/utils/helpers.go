@@ -1,4 +1,4 @@
-package internal
+package utils
 
 import (
 	"net/http"
@@ -7,12 +7,12 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func internalServerError(err error, c *gin.Context) {
+func InternalServerError(err error, c *gin.Context) {
 	log.WithField("err", err).Error("internal server error")
 	c.String(http.StatusInternalServerError, "Internal server error")
 }
 
-func notFound(err error, c *gin.Context) {
+func NotFound(err error, c *gin.Context) {
 	log.WithField("err", err).Warn("not found")
 	c.String(http.StatusNotFound, "Not found")
 }

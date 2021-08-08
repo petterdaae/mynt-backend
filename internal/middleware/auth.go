@@ -1,4 +1,4 @@
-package internal
+package middleware
 
 import (
 	"encoding/json"
@@ -12,10 +12,10 @@ import (
 )
 
 type Jwks struct {
-	Keys []JSONWebKeys `json:"keys"`
+	Keys []jsonWebKeys `json:"keys"`
 }
 
-type JSONWebKeys struct {
+type jsonWebKeys struct {
 	Kty string   `json:"kty"`
 	Kid string   `json:"kid"`
 	Use string   `json:"use"`
@@ -24,45 +24,16 @@ type JSONWebKeys struct {
 	X5c []string `json:"x5c"`
 }
 
-func getPemCert(token *jwt.Token) (string, error) {
-	cert := ""
-	resp, err := http.Get(os.Getenv("AUTH0_API_DOMAIN") + ".well-known/jwks.json")
-
-	if err != nil {
-		return cert, err
-	}
-	defer resp.Body.Close()
-
-	var jwks = Jwks{}
-	err = json.NewDecoder(resp.Body).Decode(&jwks)
-
-	if err != nil {
-		return cert, err
-	}
-
-	for k, _ := range jwks.Keys {
-		if token.Header["kid"] == jwks.Keys[k].Kid {
-			cert = "-----BEGIN CERTIFICATE-----\n" + jwks.Keys[k].X5c[0] + "\n-----END CERTIFICATE-----"
-		}
-	}
-
-	if cert == "" {
-		err := errors.New("Unable to find appropriate key.")
-		return cert, err
-	}
-
-	return cert, nil
-}
-
-func checkJwt(jwtMiddleware *jwtmiddleware.JWTMiddleware) gin.HandlerFunc {
+func AuthGuard() gin.HandlerFunc {
+	validator := createJwtValidator()
 	return func(c *gin.Context) {
-		if err := jwtMiddleware.CheckJWT(c.Writer, c.Request); err != nil {
+		if err := validator.CheckJWT(c.Writer, c.Request); err != nil {
 			c.AbortWithStatus(401)
 		}
 	}
 }
 
-func createJwtMiddleware() *jwtmiddleware.JWTMiddleware {
+func createJwtValidator() *jwtmiddleware.JWTMiddleware {
 	return jwtmiddleware.New(jwtmiddleware.Options{
 		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
 			// Verify 'aud' claim
@@ -88,4 +59,34 @@ func createJwtMiddleware() *jwtmiddleware.JWTMiddleware {
 		},
 		SigningMethod: jwt.SigningMethodRS256,
 	})
+}
+
+func getPemCert(token *jwt.Token) (string, error) {
+	cert := ""
+	resp, err := http.Get(os.Getenv("AUTH0_API_DOMAIN") + ".well-known/jwks.json")
+
+	if err != nil {
+		return cert, err
+	}
+	defer resp.Body.Close()
+
+	var jwks = Jwks{}
+	err = json.NewDecoder(resp.Body).Decode(&jwks)
+
+	if err != nil {
+		return cert, err
+	}
+
+	for k := range jwks.Keys {
+		if token.Header["kid"] == jwks.Keys[k].Kid {
+			cert = "-----BEGIN CERTIFICATE-----\n" + jwks.Keys[k].X5c[0] + "\n-----END CERTIFICATE-----"
+		}
+	}
+
+	if cert == "" {
+		err := errors.New("Unable to find appropriate key.")
+		return cert, err
+	}
+
+	return cert, nil
 }
