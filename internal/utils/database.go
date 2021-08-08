@@ -47,7 +47,7 @@ func (d *Database) Migrate() error {
 		return err
 	}
 	migrations := &migrate.PackrMigrationSource{
-		Box: packr.New("sql", "../sql"),
+		Box: packr.New("sql", "../../sql"),
 	}
 	n, err := migrate.Exec(c.DB, "postgres", migrations, migrate.Up)
 	if err == nil {

@@ -2,6 +2,7 @@ package routes
 
 import (
 	middleware "mynt/internal/middleware"
+	sync "mynt/internal/routes/sync"
 	utils "mynt/internal/utils"
 	"net/http"
 
@@ -10,7 +11,7 @@ import (
 
 // SetupRoutes assigns functions to all the different routes
 func SetupRoutes(database *utils.Database) *gin.Engine {
-	guard := middleware.AuthGuard()
+	guard := middleware.AuthGuard(database)
 
 	r := gin.Default()
 
@@ -29,6 +30,7 @@ func SetupRoutes(database *utils.Database) *gin.Engine {
 
 	// Private routes
 	r.GET("/authenticated", guard, authenticated)
+	r.POST("/sync", guard, sync.Post)
 
 	return r
 }

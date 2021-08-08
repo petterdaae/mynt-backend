@@ -5,6 +5,9 @@ import (
 	"errors"
 	"net/http"
 	"os"
+	"strings"
+
+	utils "mynt/internal/utils"
 
 	jwtmiddleware "github.com/auth0/go-jwt-middleware"
 	"github.com/form3tech-oss/jwt-go"
@@ -24,20 +27,11 @@ type jsonWebKeys struct {
 	X5c []string `json:"x5c"`
 }
 
-func AuthGuard() gin.HandlerFunc {
-	validator := createJwtValidator()
-	return func(c *gin.Context) {
-		if err := validator.CheckJWT(c.Writer, c.Request); err != nil {
-			c.AbortWithStatus(401)
-		}
-	}
-}
-
-func createJwtValidator() *jwtmiddleware.JWTMiddleware {
-	return jwtmiddleware.New(jwtmiddleware.Options{
+func AuthGuard(database *utils.Database) gin.HandlerFunc {
+	middleware := jwtmiddleware.New(jwtmiddleware.Options{
 		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
 			// Verify 'aud' claim
-			aud := os.Getenv("AUTH0_API_IDENTIFIER")
+			aud := os.Getenv("AUTH0_CLIENT_ID")
 			checkAud := token.Claims.(jwt.MapClaims).VerifyAudience(aud, false)
 			if !checkAud {
 				return token, errors.New("Invalid audience.")
@@ -59,6 +53,76 @@ func createJwtValidator() *jwtmiddleware.JWTMiddleware {
 		},
 		SigningMethod: jwt.SigningMethodRS256,
 	})
+
+	return func(c *gin.Context) {
+		if err := middleware.CheckJWT(c.Writer, c.Request); err != nil {
+			c.AbortWithStatus(401)
+		}
+	}
+}
+
+type CustomClaims struct {
+	Email string `json:"email"`
+	jwt.StandardClaims
+}
+
+// TODO : Clean up this mess
+func GetUserId(c *gin.Context) (int64, error) {
+	// Parse id token
+	authHeaderParts := strings.Split(c.Request.Header.Get("Authorization"), " ")
+	tokenString := authHeaderParts[1]
+	token, _ := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+		cert, err := getPemCert(token)
+		if err != nil {
+			return nil, err
+		}
+		result, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
+		return result, nil
+	})
+	claims, ok := token.Claims.(*CustomClaims)
+
+	// TODO : do we have to check if the token is valid here?
+	if !ok {
+		c.AbortWithStatus(500)
+		return 0, errors.New("Invalid token or failed to parse token.")
+	}
+
+	// Check if email is in database
+	database, _ := c.MustGet("database").(*utils.Database)
+	email := claims.Email
+	connection, err := database.Connect()
+	if err != nil {
+		c.AbortWithStatus(500)
+		return 0, err
+	}
+	defer connection.Close()
+
+	rows, err := connection.Query(`SELECT id FROM users WHERE email = $1`, email)
+	if err != nil {
+		c.AbortWithStatus(500)
+		return 0, err
+	}
+	defer rows.Close()
+
+	var id int64
+	count := 0
+	for rows.Next() {
+		if err := rows.Scan(&id); err != nil {
+			c.AbortWithStatus(500)
+			return 0, err
+		}
+		count++
+	}
+
+	if count == 0 {
+		err := connection.QueryRow(`INSERT INTO users (email) VALUES ($1) RETURNING id`, email).Scan(&id)
+		if err != nil {
+			c.AbortWithStatus(500)
+			return 0, err
+		}
+	}
+
+	return id, nil
 }
 
 func getPemCert(token *jwt.Token) (string, error) {
