@@ -19,50 +19,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-func ConfigureOauth2(c *gin.Context) {
-	provider, err := oidc.NewProvider(c, "https://accounts.google.com")
-	if err != nil {
-		panic(err)
-	}
-
-	oauth2Config := &oauth2.Config{
-		ClientID:     os.Getenv("GOOGLE_AUTH_CLIENT_ID"),
-		ClientSecret: os.Getenv("GOOGLE_AUTH_CLIENT_SECRET"),
-		RedirectURL:  "http://localhost:8080/auth/callback",
-		Endpoint:     provider.Endpoint(),
-		Scopes:       []string{oidc.ScopeOpenID, "email", "profile"},
-	}
-
-	verifier := provider.Verifier(&oidc.Config{ClientID: os.Getenv("GOOGLE_AUTH_CLIENT_ID")}) // TODO : put in context as well?
-
-	c.Set("oauth2Config", oauth2Config)
-	c.Set("oidcProvider", provider)
-	c.Set("oidcIDTokenVerifier", verifier)
-	c.Next()
-}
-
-func HandleRedirect(c *gin.Context) {
-	oauth2Config, _ := c.MustGet("oauth2Config").(*oauth2.Config)
-
-	state, err := utils.RandomString(16)
-	if err != nil {
-		c.AbortWithError(500, err)
-		return
-	}
-
-	nonce, err := utils.RandomString(16)
-	if err != nil {
-		c.AbortWithError(500, err)
-		return
-	}
-
-	utils.SetCookie(c, "state", state, 60)
-	utils.SetCookie(c, "nonce", nonce, 60)
-
-	c.Redirect(http.StatusFound, oauth2Config.AuthCodeURL(state, oidc.Nonce(nonce)))
-}
-
-func HandleOauth2Callback(c *gin.Context) {
+func Callback(c *gin.Context) {
 	oauth2Config, _ := c.MustGet("oauth2Config").(*oauth2.Config)
 	verifier, _ := c.MustGet("oidcIDTokenVerifier").(*oidc.IDTokenVerifier)
 
@@ -122,7 +79,12 @@ func HandleOauth2Callback(c *gin.Context) {
 
 	fmt.Println("sub:", claims.Sub)
 
-	// TODO : Create jwt token and put it in cookie
-	// TODO : Redirect to web app
-	c.Redirect(http.StatusFound, "http://localhost:3000/authenticated")
+	token, err := utils.CreateToken(c, claims.Sub)
+	if err != nil {
+		c.AbortWithError(500, err)
+		return
+	}
+
+	utils.SetCookie(c, "auth_token", token, 60)
+	c.Redirect(http.StatusFound, os.Getenv("REDIRECT_TO_FRONTEND"))
 }

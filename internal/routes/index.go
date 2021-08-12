@@ -3,7 +3,6 @@ package routes
 import (
 	middleware "mynt/internal/middleware"
 	auth "mynt/internal/routes/auth"
-	sync "mynt/internal/routes/sync"
 	utils "mynt/internal/utils"
 	"net/http"
 
@@ -14,29 +13,25 @@ import (
 func SetupRoutes(database *utils.Database) *gin.Engine {
 	r := gin.Default()
 
-	// Add cors middleware
-	cors := middleware.Cors()
-	r.Use(cors)
+	// Middleware
+	r.Use(middleware.Cors())
 
-	// Add database to context
+	// Dependencies
 	r.Use(func(c *gin.Context) {
 		c.Set("database", database)
 		c.Next()
 	})
 
-	// Configure oauth2
-	r.Use(auth.ConfigureOauth2)
+	// Authentication
+	r.Use(utils.ConfigureOauth2)
+	r.GET("/auth/redirect", auth.Redirect)
+	r.GET("/auth/callback", auth.Callback)
 
-	// Oauth2 routes
-	r.GET("/auth/redirect", auth.HandleRedirect)
-	r.GET("/auth/callback", auth.HandleOauth2Callback)
-
-	// Public routes
+	// Public
 	r.GET("/health", health)
 
-	// Private routes
+	// Private
 	r.GET("/authenticated", authenticated)
-	r.POST("/sync", sync.Post)
 
 	return r
 }
@@ -46,5 +41,17 @@ func health(c *gin.Context) {
 }
 
 func authenticated(c *gin.Context) {
+	cookie, err := c.Cookie("auth_token")
+	if err != nil {
+		c.String(http.StatusUnauthorized, "Not authenticated")
+		return
+	}
+
+	_, err = utils.ValidateToken(c, cookie)
+	if err != nil {
+		c.String(http.StatusUnauthorized, "Not authenticated")
+		return
+	}
+
 	c.String(http.StatusOK, "Authenticated")
 }
