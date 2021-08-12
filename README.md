@@ -57,3 +57,7 @@ Category (
   - `PUT` update category
 - `/sync`
   - `POST` pull new transactions from banks
+
+### Notes
+- Should change `https://github.com/dgrijalva/jwt-go` to `https://github.com/golang-jwt/jwt` when the `StandardClaims` type accepts one audience.
+- https://auth0.com/docs/flows/authorization-code-flow

@@ -2,6 +2,7 @@ package routes
 
 import (
 	middleware "mynt/internal/middleware"
+	auth "mynt/internal/routes/auth"
 	sync "mynt/internal/routes/sync"
 	utils "mynt/internal/utils"
 	"net/http"
@@ -11,8 +12,6 @@ import (
 
 // SetupRoutes assigns functions to all the different routes
 func SetupRoutes(database *utils.Database) *gin.Engine {
-	guard := middleware.AuthGuard(database)
-
 	r := gin.Default()
 
 	// Add cors middleware
@@ -25,12 +24,19 @@ func SetupRoutes(database *utils.Database) *gin.Engine {
 		c.Next()
 	})
 
+	// Configure oauth2
+	r.Use(auth.ConfigureOauth2)
+
+	// Oauth2 routes
+	r.GET("/auth/redirect", auth.HandleRedirect)
+	r.GET("/auth/callback", auth.HandleOauth2Callback)
+
 	// Public routes
 	r.GET("/health", health)
 
 	// Private routes
-	r.GET("/authenticated", guard, authenticated)
-	r.POST("/sync", guard, sync.Post)
+	r.GET("/authenticated", authenticated)
+	r.POST("/sync", sync.Post)
 
 	return r
 }
