@@ -1,5 +1,11 @@
 # mynt-backend
 
+### Authentication
+- Authentication is set up with google (create new clients in google console, all you need is a client id and secret)
+- Redirect the client to `/redirect`
+- You will see the google conscent page
+- The backend will redirect to `/authenticated` in the web app and set the `auth_token` cookie that can be used to request protected endpoints.
+
 ### Data model
 
 ```
@@ -37,27 +43,3 @@ Category (
   monthly_planned_amount
 )
 ```
-
-### Endpoints
-
-- `/accounts`
-  - `GET` all accounts
-  - `POST` insert new account
-- `/accounts/<account_id>`
-  - `PUT` update account
-- `/transactions?startDate=2020-01-01&endDate=2021-01-01`
-  - `GET` all transactions
-  - `POST` insert new transaction
-- `/transactions/<transaction_id>`
-  - `PUT` update transaction, should only be possible to change custom_description, custom_date and category
-- `/categories`
-  - `GET` all categories
-  - `POST` insert new category
-- `/categories/<category_id>`
-  - `PUT` update category
-- `/sync`
-  - `POST` pull new transactions from banks
-
-### Notes
-- Should change `https://github.com/dgrijalva/jwt-go` to `https://github.com/golang-jwt/jwt` when the `StandardClaims` type accepts one audience.
-- https://auth0.com/docs/flows/authorization-code-flow
