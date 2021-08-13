@@ -77,13 +77,14 @@ func Callback(c *gin.Context) {
 		return
 	}
 
-	// TODO : Create user if it doesn't exist
+	// Create user if not exists
 	err = createUserIfNotExists(c, claims.Sub)
 	if err != nil {
 		c.AbortWithError(500, err)
 		return
 	}
 
+	// Create an auth token
 	token, err := utils.CreateToken(c, claims.Sub)
 	if err != nil {
 		c.AbortWithError(500, err)

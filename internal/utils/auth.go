@@ -20,7 +20,7 @@ func ConfigureOauth2(c *gin.Context) {
 	oauth2Config := &oauth2.Config{
 		ClientID:     os.Getenv("GOOGLE_AUTH_CLIENT_ID"),
 		ClientSecret: os.Getenv("GOOGLE_AUTH_CLIENT_SECRET"),
-		RedirectURL:  os.Getenv("CALLBACK_URL"), // "http://localhost:8080/auth/callback",
+		RedirectURL:  os.Getenv("CALLBACK_URL"),
 		Endpoint:     provider.Endpoint(),
 		Scopes:       []string{oidc.ScopeOpenID, "email", "profile"},
 	}

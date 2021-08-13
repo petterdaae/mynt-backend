@@ -1,5 +1,10 @@
 # mynt-backend
 
+### Develop
+- Create a `.env` file similar to `.env.sample`
+- `docker-compose up`
+- `go run main.go`
+
 ### Authentication
 - Authentication is set up with google (create new clients in google console, all you need is a client id and secret)
 - Redirect the client to `/redirect`
