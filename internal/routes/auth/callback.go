@@ -77,7 +77,12 @@ func Callback(c *gin.Context) {
 		return
 	}
 
-	fmt.Println("sub:", claims.Sub)
+	// TODO : Create user if it doesn't exist
+	err = createUserIfNotExists(c, claims.Sub)
+	if err != nil {
+		c.AbortWithError(500, err)
+		return
+	}
 
 	token, err := utils.CreateToken(c, claims.Sub)
 	if err != nil {
@@ -87,4 +92,34 @@ func Callback(c *gin.Context) {
 
 	utils.SetCookie(c, "auth_token", token, 60)
 	c.Redirect(http.StatusFound, os.Getenv("REDIRECT_TO_FRONTEND"))
+}
+
+func createUserIfNotExists(c *gin.Context, sub string) error {
+	// Connect to database
+	database, _ := c.MustGet("database").(*utils.Database)
+	connection, err := database.Connect()
+	if err != nil {
+		return err
+	}
+	defer connection.Close()
+
+	// Check if user exists
+	userExists := false
+	rows, err := connection.Query("SELECT id FROM users WHERE id = $1", sub)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		userExists = true
+	}
+
+	// Do nothing if user exists
+	if userExists {
+		return nil
+	}
+
+	// Create user
+	_, err = connection.Query("INSERT INTO users (id) VALUES ($1)", sub)
+	return err
 }

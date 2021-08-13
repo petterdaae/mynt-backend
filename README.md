@@ -6,6 +6,11 @@
 - You will see the google conscent page
 - The backend will redirect to `/authenticated` in the web app and set the `auth_token` cookie that can be used to request protected endpoints.
 
+### Database migration
+- `sql-migrate new <name-of-migration>`
+- `sql-migrate up`
+- `sql-migrate redo`
+
 ### Data model
 
 ```
