@@ -41,7 +41,7 @@ spec:
               valueFrom:
                   secretKeyRef:
                     name: mynt-backend-auth
-                    key: googe_client_id
+                    key: google_client_id
             - name: GOOGLE_AUTH_CLIENT_SECRET
               valueFrom:
                   secretKeyRef:
