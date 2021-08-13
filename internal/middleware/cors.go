@@ -1,4 +1,4 @@
-package internal
+package middleware
 
 import (
 	"os"
@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func createCorsMiddleware() gin.HandlerFunc {
+func Cors() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", os.Getenv("ORIGIN"))
 		c.Writer.Header().Set("Access-Control-Max-Age", "86400")

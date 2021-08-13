@@ -1,4 +1,4 @@
-package internal
+package utils
 
 import (
 	"fmt"
@@ -10,12 +10,12 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type database struct {
+type Database struct {
 	psqlConnectionString string
 }
 
-func initDatabase() *database {
-	return &database{
+func InitDatabase() *Database {
+	return &Database{
 		psqlConnectionString: fmt.Sprintf(
 			"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 			os.Getenv("POSTGRES_HOST"),
@@ -28,12 +28,12 @@ func initDatabase() *database {
 	}
 }
 
-func (d *database) connect() (*sqlx.DB, error) {
+func (d *Database) Connect() (*sqlx.DB, error) {
 	return sqlx.Connect("postgres", d.psqlConnectionString)
 }
 
-func (d *database) Ping() error {
-	c, err := d.connect()
+func (d *Database) Ping() error {
+	c, err := d.Connect()
 	if err != nil {
 		return err
 	}
@@ -41,13 +41,13 @@ func (d *database) Ping() error {
 	return err
 }
 
-func (d *database) Migrate() error {
-	c, err := d.connect()
+func (d *Database) Migrate() error {
+	c, err := d.Connect()
 	if err != nil {
 		return err
 	}
 	migrations := &migrate.PackrMigrationSource{
-		Box: packr.New("sql", "../sql"),
+		Box: packr.New("sql", "../../sql"),
 	}
 	n, err := migrate.Exec(c.DB, "postgres", migrations, migrate.Up)
 	if err == nil {
