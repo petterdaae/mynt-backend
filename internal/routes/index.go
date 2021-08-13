@@ -31,7 +31,8 @@ func SetupRoutes(database *utils.Database) *gin.Engine {
 	r.GET("/health", health)
 
 	// Private
-	r.GET("/authenticated", authenticated)
+	auth := middleware.Auth(database)
+	r.GET("/authenticated", auth, authenticated)
 
 	return r
 }
@@ -41,17 +42,5 @@ func health(c *gin.Context) {
 }
 
 func authenticated(c *gin.Context) {
-	cookie, err := c.Cookie("auth_token")
-	if err != nil {
-		c.String(http.StatusUnauthorized, "Not authenticated")
-		return
-	}
-
-	_, err = utils.ValidateToken(c, cookie)
-	if err != nil {
-		c.String(http.StatusUnauthorized, "Not authenticated")
-		return
-	}
-
 	c.String(http.StatusOK, "Authenticated")
 }
