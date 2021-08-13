@@ -17,11 +17,11 @@ func RandomString(n int) (string, error) {
 	return base64.RawURLEncoding.EncodeToString(b), nil
 }
 
-func SetCookie(c *gin.Context, name string, value string, seconds int) {
+func SetCookie(c *gin.Context, name string, value string, minutes int) {
 	cookie := &http.Cookie{
 		Name:     name,
 		Value:    value,
-		MaxAge:   seconds,
+		MaxAge:   minutes * 60,
 		Secure:   c.Request.TLS != nil,
 		HttpOnly: true,
 		Path:     "/",

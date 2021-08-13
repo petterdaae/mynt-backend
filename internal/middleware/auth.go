@@ -12,21 +12,21 @@ func Auth(database *utils.Database) gin.HandlerFunc {
 		// Extract auth token from cookie
 		cookie, err := c.Cookie("auth_token")
 		if err != nil {
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.AbortWithError(http.StatusUnauthorized, err)
 			return
 		}
 
 		// Validate auth token
 		sub, err := utils.ValidateToken(c, cookie)
 		if err != nil {
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.AbortWithError(http.StatusUnauthorized, err)
 			return
 		}
 
 		// Check if used exists
 		connection, err := database.Connect()
 		if err != nil {
-			c.AbortWithStatus(http.StatusInternalServerError)
+			c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
 		defer connection.Close()
@@ -44,7 +44,7 @@ func Auth(database *utils.Database) gin.HandlerFunc {
 		}
 
 		// Set user id in context if the token is valid and the user exists
-		c.Set("user", sub)
+		c.Set("sub", sub)
 		c.Next()
 	}
 }

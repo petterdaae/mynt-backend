@@ -1,9 +1,10 @@
 package routes
 
 import (
-	middleware "mynt/internal/middleware"
-	auth "mynt/internal/routes/auth"
-	utils "mynt/internal/utils"
+	"mynt/internal/middleware"
+	"mynt/internal/routes/auth"
+	"mynt/internal/routes/user"
+	"mynt/internal/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -33,6 +34,9 @@ func SetupRoutes(database *utils.Database) *gin.Engine {
 	// Private
 	auth := middleware.Auth(database)
 	r.GET("/authenticated", auth, authenticated)
+	r.PUT("/user/secrets/sbanken", auth, user.UpdateSbankenSecrets)
+
+	r.Use(middleware.Error())
 
 	return r
 }
