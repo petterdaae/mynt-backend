@@ -18,14 +18,24 @@ type sbankenAccounts struct {
 }
 
 type sbankenAccount struct {
-	AccountId       string
-	AccountNumber   string
-	OwnerCustomerId string
-	Name            string
-	AccountType     string
-	Available       float64
-	Balance         float64
-	CreditLimit     float64
+	AccountId     string
+	AccountNumber string
+	Name          string
+	Available     float64
+	Balance       float64
+}
+
+type sbankenTransactions struct {
+	AvailableItems int
+	Items          []sbankenTransaction
+}
+
+type sbankenTransaction struct {
+	TransactionId  string
+	AccountingDate string
+	InterestDate   string
+	Amount         float64
+	Text           string
 }
 
 func Sbanken(c *gin.Context) {
@@ -71,9 +81,19 @@ func Sbanken(c *gin.Context) {
 	}
 
 	accounts, err := getAccounts(accessToken)
+	if err != nil {
+		c.AbortWithError(500, fmt.Errorf("failed to get sbanken accounts: %w", err))
+		return
+	}
+
+	transactions, err := getTransactions(accessToken, accounts.Items[0].AccountId)
+	if err != nil {
+		c.AbortWithError(500, fmt.Errorf("failed to get sbanken transactions: %w", err))
+		return
+	}
 
 	// Update accounts and transactions
-	c.JSON(200, accounts)
+	c.JSON(200, transactions)
 }
 
 func getAccessToken(clientId, clientSecret string) (string, error) {
@@ -162,6 +182,46 @@ func getAccounts(accessToken string) (*sbankenAccounts, error) {
 	}
 
 	var responseBody sbankenAccounts
+	err = json.Unmarshal(responseBodyBytes, &responseBody)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse response body: %w", err)
+	}
+
+	return &responseBody, nil
+}
+
+func getTransactions(accessToken string, accountId string) (*sbankenTransactions, error) {
+	// Build request
+	request, err := http.NewRequest(
+		"GET",
+		"https://publicapi.sbanken.no/apibeta/api/v1/transactions/archive/"+accountId,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to build request: %w", err)
+	}
+	request.Header.Set("Authorization", "Bearer "+accessToken)
+	request.Header.Set("Accept", "application/json")
+
+	// Send request
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send request: %w", err)
+	}
+	defer response.Body.Close()
+
+	// Check response
+	if response.StatusCode != 200 {
+		responseBodyBytes, _ := ioutil.ReadAll(response.Body)
+		return nil, fmt.Errorf("unexpected status code: (%v, %v)", response.StatusCode, string(responseBodyBytes))
+	}
+
+	responseBodyBytes, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	var responseBody sbankenTransactions
 	err = json.Unmarshal(responseBodyBytes, &responseBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse response body: %w", err)
