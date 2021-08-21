@@ -3,6 +3,7 @@ package routes
 import (
 	"mynt/internal/middleware"
 	"mynt/internal/routes/auth"
+	"mynt/internal/routes/synchronize"
 	"mynt/internal/routes/user"
 	"mynt/internal/utils"
 	"net/http"
@@ -35,8 +36,7 @@ func SetupRoutes(database *utils.Database) *gin.Engine {
 	auth := middleware.Auth(database)
 	r.GET("/authenticated", auth, authenticated)
 	r.PUT("/user/secrets/sbanken", auth, user.UpdateSbankenSecrets)
-
-	r.Use(middleware.Error())
+	r.POST("/synchronize/sbanken", auth, synchronize.Sbanken)
 
 	return r
 }

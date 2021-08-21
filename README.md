@@ -16,6 +16,11 @@
 - `sql-migrate up`
 - `sql-migrate redo`
 
+### How to get Sbanken credentials
+
+- https://secure.sbanken.no/Home/Settings/BetaProgram
+- https://secure.sbanken.no/Personal/ApiBeta/Info/
+
 ### Data model
 
 ```

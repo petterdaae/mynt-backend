@@ -28,3 +28,7 @@ func SetCookie(c *gin.Context, name string, value string, minutes int) {
 	}
 	http.SetCookie(c.Writer, cookie)
 }
+
+func Base64Encode(s string) string {
+	return base64.RawURLEncoding.EncodeToString([]byte(s))
+}
