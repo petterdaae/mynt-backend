@@ -86,12 +86,7 @@ func Sbanken(c *gin.Context) {
 		return
 	}
 
-	transactions, err := getTransactions(accessToken, accounts.Items[0].AccountId)
-	if err != nil {
-		c.AbortWithError(500, fmt.Errorf("failed to get sbanken transactions: %w", err))
-		return
-	}
-
+	// Update accounts and transactions
 	for _, account := range accounts.Items {
 		_, err := connection.Exec(
 			"INSERT INTO accounts (id, user_id, external_id, account_number, name, available, balance) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id) DO UPDATE SET name = $5, available = $6, balance = $7",
@@ -108,10 +103,35 @@ func Sbanken(c *gin.Context) {
 			c.AbortWithError(500, fmt.Errorf("failed to insert sbanken account: %w", err))
 			return
 		}
+
+		transactions, err := getTransactions(accessToken, account.AccountId)
+		if err != nil {
+			c.AbortWithError(500, fmt.Errorf("failed to get sbanken transactions: %w", err))
+			return
+		}
+
+		for _, transaction := range transactions.Items {
+			_, err := connection.Exec(
+				"INSERT INTO transactions (id, user_id, account_id, external_id, accounting_date, interest_date, amount, text) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (id) DO NOTHING",
+				"sbanken:"+transaction.TransactionId,
+				sub,
+				"sbanken:"+account.AccountId,
+				transaction.TransactionId,
+				transaction.AccountingDate,
+				transaction.InterestDate,
+				utils.CurrencyToInt(transaction.Amount),
+				transaction.Text,
+			)
+
+			if err != nil {
+				c.AbortWithError(500, fmt.Errorf("failed to insert sbanken transaction: %w", err))
+				return
+			}
+		}
+
 	}
 
-	// Update accounts and transactions
-	c.JSON(200, transactions)
+	c.String(200, "Success")
 }
 
 func getAccessToken(clientId, clientSecret string) (string, error) {
