@@ -32,3 +32,11 @@ func SetCookie(c *gin.Context, name string, value string, minutes int) {
 func Base64Encode(s string) string {
 	return base64.RawURLEncoding.EncodeToString([]byte(s))
 }
+
+func CurrencyToInt(currency float64) int {
+	return int(currency * 100)
+}
+
+func IntToCurrency(amount int) float64 {
+	return float64(amount) / 100
+}

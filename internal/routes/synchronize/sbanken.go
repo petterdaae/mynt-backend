@@ -92,6 +92,24 @@ func Sbanken(c *gin.Context) {
 		return
 	}
 
+	for _, account := range accounts.Items {
+		_, err := connection.Exec(
+			"INSERT INTO accounts (id, user_id, external_id, account_number, name, available, balance) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id) DO UPDATE SET name = $5, available = $6, balance = $7",
+			"sbanken:"+account.AccountId,
+			sub,
+			account.AccountId,
+			account.AccountNumber,
+			account.Name,
+			utils.CurrencyToInt(account.Available),
+			utils.CurrencyToInt(account.Balance),
+		)
+
+		if err != nil {
+			c.AbortWithError(500, fmt.Errorf("failed to insert sbanken account: %w", err))
+			return
+		}
+	}
+
 	// Update accounts and transactions
 	c.JSON(200, transactions)
 }
