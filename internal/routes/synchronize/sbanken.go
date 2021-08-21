@@ -12,6 +12,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type sbankenAccounts struct {
+	AvailableItems int
+	Items          []sbankenAccount
+}
+
+type sbankenAccount struct {
+	AccountId       string
+	AccountNumber   string
+	OwnerCustomerId string
+	Name            string
+	AccountType     string
+	Available       float64
+	Balance         float64
+	CreditLimit     float64
+}
+
 func Sbanken(c *gin.Context) {
 	sub := c.GetString("sub")
 	database, _ := c.MustGet("database").(*utils.Database)
@@ -54,12 +70,14 @@ func Sbanken(c *gin.Context) {
 		return
 	}
 
+	accounts, err := getAccounts(accessToken)
+
 	// Update accounts and transactions
-	c.String(200, accessToken)
+	c.JSON(200, accounts)
 }
 
 func getAccessToken(clientId, clientSecret string) (string, error) {
-	// Craft request
+	// Build request
 	request, err := http.NewRequest(
 		"POST",
 		"https://auth.sbanken.no/identityserver/connect/token",
@@ -110,4 +128,44 @@ func authHeader(clientId string, clientSecret string) string {
 	return "Basic " + utils.Base64Encode(
 		url.QueryEscape(clientId)+":"+url.QueryEscape(clientSecret),
 	) + "=="
+}
+
+func getAccounts(accessToken string) (*sbankenAccounts, error) {
+	// Build request
+	request, err := http.NewRequest(
+		"GET",
+		"https://publicapi.sbanken.no/apibeta/api/v1/Accounts",
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to build request: %w", err)
+	}
+	request.Header.Set("Authorization", "Bearer "+accessToken)
+	request.Header.Set("Accept", "application/json")
+
+	// Send request
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send request: %w", err)
+	}
+	defer response.Body.Close()
+
+	// Check response
+	if response.StatusCode != 200 {
+		responseBodyBytes, _ := ioutil.ReadAll(response.Body)
+		return nil, fmt.Errorf("unexpected status code: (%v, %v)", response.StatusCode, string(responseBodyBytes))
+	}
+
+	responseBodyBytes, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	var responseBody sbankenAccounts
+	err = json.Unmarshal(responseBodyBytes, &responseBody)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse response body: %w", err)
+	}
+
+	return &responseBody, nil
 }
