@@ -18,7 +18,7 @@ func Execute() {
 
 	err := database.Ping()
 	if err != nil {
-		log.Fatal(fmt.Errorf("error occured while connecting to the database: %w", err))
+		log.Fatal(fmt.Errorf("error occurred while connecting to the database: %w", err))
 	}
 
 	err = database.Migrate()
@@ -28,5 +28,9 @@ func Execute() {
 
 	r := internal.SetupRoutes(database)
 
-	r.Run(fmt.Sprintf(":%s", os.Getenv("PORT")))
+	err = r.Run(fmt.Sprintf(":%s", os.Getenv("PORT")))
+
+	if err != nil {
+		panic(err)
+	}
 }

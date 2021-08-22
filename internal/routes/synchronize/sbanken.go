@@ -2,6 +2,7 @@ package synchronize
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -18,7 +19,7 @@ type sbankenAccounts struct {
 }
 
 type sbankenAccount struct {
-	AccountId     string
+	AccountID     string `json:"AccountId"`
 	AccountNumber string
 	Name          string
 	Available     float64
@@ -31,7 +32,7 @@ type sbankenTransactions struct {
 }
 
 type sbankenTransaction struct {
-	TransactionId  string
+	TransactionID  string `json:"TransactionId"`
 	AccountingDate string
 	InterestDate   string
 	Amount         float64
@@ -45,54 +46,55 @@ func Sbanken(c *gin.Context) {
 	// Connect to database
 	connection, err := database.Connect()
 	if err != nil {
-		c.AbortWithError(500, fmt.Errorf("database connection failed: %w", err))
+		utils.InternalServerError(c, fmt.Errorf("database connection failed: %w", err))
 		return
 	}
 	defer connection.Close()
 
 	// Get client id and secret
-	var clientId string
+	var clientID string
 	var clientSecret string
 	rows, err := connection.Query("SELECT sbanken_client_id, sbanken_client_secret FROM users WHERE id = $1", sub)
 	if err != nil {
-		c.AbortWithError(500, fmt.Errorf("query for sbanken credentials failed"))
+		utils.InternalServerError(c, fmt.Errorf("query for sbanken credentials failed: %w", err))
 		return
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		err := rows.Scan(&clientId, &clientSecret)
+		err = rows.Scan(&clientID, &clientSecret)
 		if err != nil {
-			c.AbortWithError(500, fmt.Errorf("parsing query result for sbanken credentials failed: %w", err))
+			utils.InternalServerError(c, fmt.Errorf("parsing query result for sbanken credentials failed: %w", err))
 			return
 		}
 	}
 
-	if clientId == "" || clientSecret == "" {
-		c.AbortWithError(400, fmt.Errorf("missing credentials: client id or client secret is blank"))
+	if clientID == "" || clientSecret == "" {
+		utils.Unauthorized(c, fmt.Errorf("missing credentials: client id or client secret is blank"))
 		return
 	}
 
 	// Query sbanken for accesstoken, accounts and transactions
-	accessToken, err := getAccessToken(clientId, clientSecret)
+	accessToken, err := getAccessToken(clientID, clientSecret)
 	if err != nil {
-		c.AbortWithError(500, fmt.Errorf("failed to get sbanken access token: %w", err))
+		utils.InternalServerError(c, fmt.Errorf("failed to get sbanken access token: %w", err))
 		return
 	}
 
 	accounts, err := getAccounts(accessToken)
 	if err != nil {
-		c.AbortWithError(500, fmt.Errorf("failed to get sbanken accounts: %w", err))
+		utils.InternalServerError(c, fmt.Errorf("failed to get sbanken accounts: %w", err))
 		return
 	}
 
 	// Update accounts and transactions
 	for _, account := range accounts.Items {
 		_, err := connection.Exec(
-			"INSERT INTO accounts (id, user_id, external_id, account_number, name, available, balance) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id) DO UPDATE SET name = $5, available = $6, balance = $7",
-			"sbanken:"+account.AccountId,
+			"INSERT INTO accounts (id, user_id, external_id, account_number, name, available, balance) VALUES ($1, $2, $3, $4, $5, $6, $7) "+
+				"ON CONFLICT (id) DO UPDATE SET name = $5, available = $6, balance = $7",
+			"sbanken:"+account.AccountID,
 			sub,
-			account.AccountId,
+			account.AccountID,
 			account.AccountNumber,
 			account.Name,
 			utils.CurrencyToInt(account.Available),
@@ -100,23 +102,25 @@ func Sbanken(c *gin.Context) {
 		)
 
 		if err != nil {
-			c.AbortWithError(500, fmt.Errorf("failed to insert sbanken account: %w", err))
+			utils.InternalServerError(c, fmt.Errorf("failed to insert sbanken account: %w", err))
 			return
 		}
 
-		transactions, err := getTransactions(accessToken, account.AccountId)
+		transactions, err := getTransactions(accessToken, account.AccountID)
 		if err != nil {
-			c.AbortWithError(500, fmt.Errorf("failed to get sbanken transactions: %w", err))
+			utils.InternalServerError(c, fmt.Errorf("failed to get sbanken transactions: %w", err))
 			return
 		}
 
 		for _, transaction := range transactions.Items {
 			_, err := connection.Exec(
-				"INSERT INTO transactions (id, user_id, account_id, external_id, accounting_date, interest_date, amount, text) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (id) DO NOTHING",
-				"sbanken:"+transaction.TransactionId,
+				"INSERT INTO transactions (id, user_id, account_id, external_id, accounting_date, interest_date, amount, text) "+
+					"VALUES ($1, $2, $3, $4, $5, $6, $7, $8) "+
+					"ON CONFLICT (id) DO NOTHING",
+				"sbanken:"+transaction.TransactionID,
 				sub,
-				"sbanken:"+account.AccountId,
-				transaction.TransactionId,
+				"sbanken:"+account.AccountID,
+				transaction.TransactionID,
 				transaction.AccountingDate,
 				transaction.InterestDate,
 				utils.CurrencyToInt(transaction.Amount),
@@ -124,19 +128,21 @@ func Sbanken(c *gin.Context) {
 			)
 
 			if err != nil {
-				c.AbortWithError(500, fmt.Errorf("failed to insert sbanken transaction: %w", err))
+				utils.InternalServerError(c, fmt.Errorf("failed to insert sbanken transaction: %w", err))
 				return
 			}
 		}
-
 	}
 
-	c.String(200, "Success")
+	c.String(http.StatusOK, "Success")
 }
 
-func getAccessToken(clientId, clientSecret string) (string, error) {
+func getAccessToken(clientID, clientSecret string) (string, error) {
+	c := context.TODO()
+
 	// Build request
-	request, err := http.NewRequest(
+	request, err := http.NewRequestWithContext(
+		c,
 		"POST",
 		"https://auth.sbanken.no/identityserver/connect/token",
 		bytes.NewBuffer([]byte("grant_type=client_credentials")),
@@ -146,7 +152,7 @@ func getAccessToken(clientId, clientSecret string) (string, error) {
 	}
 
 	request.Header.Set("Accept", "application/json")
-	request.Header.Set("Authorization", authHeader(clientId, clientSecret))
+	request.Header.Set("Authorization", authHeader(clientID, clientSecret))
 	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	// Send request
@@ -157,7 +163,7 @@ func getAccessToken(clientId, clientSecret string) (string, error) {
 	defer response.Body.Close()
 
 	// Check response
-	if response.StatusCode != 200 {
+	if response.StatusCode != http.StatusOK {
 		responseBodyBytes, _ := ioutil.ReadAll(response.Body)
 		return "", fmt.Errorf("unexpected status code: (%v, %v)", response.StatusCode, string(responseBodyBytes))
 	}
@@ -182,15 +188,18 @@ func getAccessToken(clientId, clientSecret string) (string, error) {
 	return accessToken, nil
 }
 
-func authHeader(clientId string, clientSecret string) string {
+func authHeader(clientID, clientSecret string) string {
 	return "Basic " + utils.Base64Encode(
-		url.QueryEscape(clientId)+":"+url.QueryEscape(clientSecret),
+		url.QueryEscape(clientID)+":"+url.QueryEscape(clientSecret),
 	) + "=="
 }
 
 func getAccounts(accessToken string) (*sbankenAccounts, error) {
+	c := context.TODO()
+
 	// Build request
-	request, err := http.NewRequest(
+	request, err := http.NewRequestWithContext(
+		c,
 		"GET",
 		"https://publicapi.sbanken.no/apibeta/api/v1/Accounts",
 		nil,
@@ -209,7 +218,7 @@ func getAccounts(accessToken string) (*sbankenAccounts, error) {
 	defer response.Body.Close()
 
 	// Check response
-	if response.StatusCode != 200 {
+	if response.StatusCode != http.StatusOK {
 		responseBodyBytes, _ := ioutil.ReadAll(response.Body)
 		return nil, fmt.Errorf("unexpected status code: (%v, %v)", response.StatusCode, string(responseBodyBytes))
 	}
@@ -228,11 +237,14 @@ func getAccounts(accessToken string) (*sbankenAccounts, error) {
 	return &responseBody, nil
 }
 
-func getTransactions(accessToken string, accountId string) (*sbankenTransactions, error) {
+func getTransactions(accessToken, accountID string) (*sbankenTransactions, error) {
+	c := context.TODO()
+
 	// Build request
-	request, err := http.NewRequest(
+	request, err := http.NewRequestWithContext(
+		c,
 		"GET",
-		"https://publicapi.sbanken.no/apibeta/api/v1/transactions/archive/"+accountId,
+		"https://publicapi.sbanken.no/apibeta/api/v1/transactions/archive/"+accountID,
 		nil,
 	)
 	if err != nil {
@@ -249,7 +261,7 @@ func getTransactions(accessToken string, accountId string) (*sbankenTransactions
 	defer response.Body.Close()
 
 	// Check response
-	if response.StatusCode != 200 {
+	if response.StatusCode != http.StatusOK {
 		responseBodyBytes, _ := ioutil.ReadAll(response.Body)
 		return nil, fmt.Errorf("unexpected status code: (%v, %v)", response.StatusCode, string(responseBodyBytes))
 	}

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"mynt/internal/utils"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,29 +20,34 @@ func UpdateSbankenSecrets(c *gin.Context) {
 
 	body, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
-		c.AbortWithError(500, err)
+		utils.InternalServerError(c, err)
 		return
 	}
 
 	secrets := &sbankenSecrets{}
 	err = json.Unmarshal(body, secrets)
 	if err != nil {
-		c.AbortWithError(500, err)
+		utils.InternalServerError(c, err)
 		return
 	}
 
 	connection, err := database.Connect()
 	if err != nil {
-		c.AbortWithError(500, err)
+		utils.InternalServerError(c, err)
 		return
 	}
 	defer connection.Close()
 
-	_, err = connection.Exec("UPDATE users SET sbanken_client_id = $1, sbanken_client_secret = $2 WHERE id = $3", secrets.ClientID, secrets.ClientSecret, sub)
+	_, err = connection.Exec(
+		"UPDATE users SET sbanken_client_id = $1, sbanken_client_secret = $2 WHERE id = $3",
+		secrets.ClientID,
+		secrets.ClientSecret,
+		sub,
+	)
 	if err != nil {
-		c.AbortWithError(500, err)
+		utils.InternalServerError(c, err)
 		return
 	}
 
-	c.Status(204)
+	c.Status(http.StatusNoContent)
 }

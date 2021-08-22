@@ -33,10 +33,10 @@ func SetupRoutes(database *utils.Database) *gin.Engine {
 	r.GET("/health", health)
 
 	// Private
-	auth := middleware.Auth(database)
-	r.GET("/authenticated", auth, authenticated)
-	r.PUT("/user/secrets/sbanken", auth, user.UpdateSbankenSecrets)
-	r.POST("/synchronize/sbanken", auth, synchronize.Sbanken)
+	authGuard := middleware.Auth(database)
+	r.GET("/authenticated", authGuard, authenticated)
+	r.PUT("/user/secrets/sbanken", authGuard, user.UpdateSbankenSecrets)
+	r.POST("/synchronize/sbanken", authGuard, synchronize.Sbanken)
 
 	return r
 }

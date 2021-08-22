@@ -12,20 +12,23 @@ import (
 func Redirect(c *gin.Context) {
 	oauth2Config, _ := c.MustGet("oauth2Config").(*oauth2.Config)
 
-	state, err := utils.RandomString(16)
+	stateAndNonceLength := 16
+
+	state, err := utils.RandomString(stateAndNonceLength)
 	if err != nil {
-		c.AbortWithError(500, err)
+		utils.InternalServerError(c, err)
 		return
 	}
 
-	nonce, err := utils.RandomString(16)
+	nonce, err := utils.RandomString(stateAndNonceLength)
 	if err != nil {
-		c.AbortWithError(500, err)
+		utils.InternalServerError(c, err)
 		return
 	}
 
-	utils.SetCookie(c, "state", state, 60)
-	utils.SetCookie(c, "nonce", nonce, 60)
+	cookieMaxAgeInMinutes := 60
+	utils.SetCookie(c, "state", state, cookieMaxAgeInMinutes)
+	utils.SetCookie(c, "nonce", nonce, cookieMaxAgeInMinutes)
 
 	c.Redirect(http.StatusFound, oauth2Config.AuthCodeURL(state, oidc.Nonce(nonce)))
 }

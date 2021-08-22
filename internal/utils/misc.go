@@ -17,7 +17,7 @@ func RandomString(n int) (string, error) {
 	return base64.RawURLEncoding.EncodeToString(b), nil
 }
 
-func SetCookie(c *gin.Context, name string, value string, minutes int) {
+func SetCookie(c *gin.Context, name, value string, minutes int) {
 	cookie := &http.Cookie{
 		Name:     name,
 		Value:    value,
@@ -34,9 +34,11 @@ func Base64Encode(s string) string {
 }
 
 func CurrencyToInt(currency float64) int {
-	return int(currency * 100)
+	currencyScaleInDatabase := 100
+	return int(currency * float64(currencyScaleInDatabase))
 }
 
 func IntToCurrency(amount int) float64 {
-	return float64(amount) / 100
+	currencyScaleInDatabase := 100
+	return float64(amount) / float64(currencyScaleInDatabase)
 }
