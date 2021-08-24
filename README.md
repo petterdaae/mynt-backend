@@ -36,3 +36,4 @@
 We currently only support data fetching from the Sbanken Open API platform. To obtain a client id and secret:
 - Visit https://secure.sbanken.no/Home/Settings/BetaProgram and enable beta.
 - Then, visit https://secure.sbanken.no/Personal/ApiBeta/Info/ to obtain the credentials.
+- Note that it often takes some time (~10+ minutes) before theses credentials are valid.
