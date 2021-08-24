@@ -25,6 +25,7 @@ func Get(c *gin.Context) {
 	if err != nil {
 		utils.InternalServerError(c, fmt.Errorf("failed to connect to database: %w", err))
 	}
+	defer connection.Close()
 
 	rows, err := connection.Query(
 		"SELECT id, account_id, accounting_date, interest_date, amount, text FROM transactions WHERE user_id = $1",
