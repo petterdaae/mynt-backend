@@ -1,9 +1,13 @@
 package routes
 
 import (
-	middleware "mynt/internal/middleware"
-	auth "mynt/internal/routes/auth"
-	utils "mynt/internal/utils"
+	"mynt/internal/middleware"
+	"mynt/internal/routes/accounts"
+	"mynt/internal/routes/auth"
+	"mynt/internal/routes/synchronize"
+	"mynt/internal/routes/transactions"
+	"mynt/internal/routes/user"
+	"mynt/internal/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -31,7 +35,12 @@ func SetupRoutes(database *utils.Database) *gin.Engine {
 	r.GET("/health", health)
 
 	// Private
-	r.GET("/authenticated", authenticated)
+	authGuard := middleware.Auth(database)
+	r.GET("/authenticated", authGuard, authenticated)
+	r.PUT("/user/secrets/sbanken", authGuard, user.UpdateSbankenSecrets)
+	r.POST("/synchronize/sbanken", authGuard, synchronize.Sbanken)
+	r.GET("/transactions", authGuard, transactions.Get)
+	r.GET("/accounts", authGuard, accounts.Get)
 
 	return r
 }
@@ -41,17 +50,5 @@ func health(c *gin.Context) {
 }
 
 func authenticated(c *gin.Context) {
-	cookie, err := c.Cookie("auth_token")
-	if err != nil {
-		c.String(http.StatusUnauthorized, "Not authenticated")
-		return
-	}
-
-	_, err = utils.ValidateToken(c, cookie)
-	if err != nil {
-		c.String(http.StatusUnauthorized, "Not authenticated")
-		return
-	}
-
 	c.String(http.StatusOK, "Authenticated")
 }

@@ -1,11 +1,3 @@
-/*
-
-Based on documentation from:
-- https://github.com/coreos/go-oidc
-- https://developers.google.com/identity/protocols/oauth2/openid-connect
-
-*/
-
 package auth
 
 import (
@@ -26,45 +18,45 @@ func Callback(c *gin.Context) {
 	// Verify state
 	state, err := c.Cookie("state")
 	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("state not found"))
+		utils.BadRequest(c, fmt.Errorf("state not found"))
 		return
 	}
 
 	if c.Query("state") != state {
-		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("state did not match"))
+		utils.BadRequest(c, fmt.Errorf("state did not match"))
 		return
 	}
 
 	// Exchange code for token
 	oauth2Token, err := oauth2Config.Exchange(c, c.Request.URL.Query().Get("code"))
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("failed to exchange code for token: %w", err))
+		utils.InternalServerError(c, fmt.Errorf("failed to exchange code for token: %w", err))
 		return
 	}
 
 	// Extract the ID Token from OAuth2 Token
 	rawIDToken, ok := oauth2Token.Extra("id_token").(string)
 	if !ok {
-		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("no id_token field in oauth2 token"))
+		utils.InternalServerError(c, fmt.Errorf("no id_token field in oauth2 token"))
 		return
 	}
 
 	// Parse and verify ID Token payload
 	idToken, err := verifier.Verify(c, rawIDToken)
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("failed to verify id token: %w", err))
+		utils.InternalServerError(c, fmt.Errorf("failed to verify id token: %w", err))
 		return
 	}
 
 	// Verify nonce
 	nonce, err := c.Cookie("nonce")
 	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, fmt.Errorf("nonce not found"))
+		utils.BadRequest(c, fmt.Errorf("nonce not found"))
 		return
 	}
 
 	if idToken.Nonce != nonce {
-		c.AbortWithError(500, err)
+		utils.InternalServerError(c, fmt.Errorf("nonce did not match"))
 		return
 	}
 
@@ -73,25 +65,26 @@ func Callback(c *gin.Context) {
 		Sub string `json:"sub"`
 	}
 
-	if err := idToken.Claims(&claims); err != nil {
+	if err = idToken.Claims(&claims); err != nil {
 		return
 	}
 
 	// Create user if not exists
 	err = createUserIfNotExists(c, claims.Sub)
 	if err != nil {
-		c.AbortWithError(500, err)
+		utils.InternalServerError(c, fmt.Errorf("failed to create user: %w", err))
 		return
 	}
 
 	// Create an auth token
 	token, err := utils.CreateToken(c, claims.Sub)
 	if err != nil {
-		c.AbortWithError(500, err)
+		utils.InternalServerError(c, fmt.Errorf("failed to create token: %w", err))
 		return
 	}
 
-	utils.SetCookie(c, "auth_token", token, 60)
+	cookieMaxAgeInMinutes := 60
+	utils.SetCookie(c, "auth_token", token, cookieMaxAgeInMinutes)
 	c.Redirect(http.StatusFound, os.Getenv("REDIRECT_TO_FRONTEND"))
 }
 
@@ -121,6 +114,6 @@ func createUserIfNotExists(c *gin.Context, sub string) error {
 	}
 
 	// Create user
-	_, err = connection.Query("INSERT INTO users (id) VALUES ($1)", sub)
+	_, err = connection.Exec("INSERT INTO users (id) VALUES ($1)", sub)
 	return err
 }
