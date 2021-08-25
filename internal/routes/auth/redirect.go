@@ -27,8 +27,8 @@ func Redirect(c *gin.Context) {
 	}
 
 	cookieMaxAgeInMinutes := 60
-	utils.SetCookie(c, "state", state, cookieMaxAgeInMinutes)
-	utils.SetCookie(c, "nonce", nonce, cookieMaxAgeInMinutes)
+	utils.SetCookieWithoutDomain(c, "state", state, cookieMaxAgeInMinutes)
+	utils.SetCookieWithoutDomain(c, "nonce", nonce, cookieMaxAgeInMinutes)
 
 	c.Redirect(http.StatusFound, oauth2Config.AuthCodeURL(state, oidc.Nonce(nonce)))
 }
