@@ -38,7 +38,7 @@ func Get(c *gin.Context) {
 	}
 	defer rows.Close()
 
-	var transactions []Transaction
+	transactions := []Transaction{}
 	for rows.Next() {
 		var transaction Transaction
 		err := rows.Scan(

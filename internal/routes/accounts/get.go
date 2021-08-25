@@ -34,7 +34,7 @@ func Get(c *gin.Context) {
 	}
 	defer rows.Close()
 
-	var accounts []Account
+	accounts := []Account{}
 
 	for rows.Next() {
 		var account Account
