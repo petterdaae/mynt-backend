@@ -5,6 +5,7 @@ import (
 	"mynt/internal/utils"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/gin-gonic/gin"
@@ -83,8 +84,10 @@ func Callback(c *gin.Context) {
 		return
 	}
 
-	cookieMaxAgeInMinutes := 60
-	utils.SetCookie(c, "auth_token", token, cookieMaxAgeInMinutes)
+	tokenCookieAge := 60
+	expiryCookieAge := 120
+	utils.SetCookie(c, "auth_token", token, tokenCookieAge)
+	utils.SetUnsafeCookie(c, "auth_expiry", fmt.Sprintf("%v", unixTimeInOneHour()), expiryCookieAge)
 	c.Redirect(http.StatusFound, os.Getenv("REDIRECT_TO_FRONTEND"))
 }
 
@@ -116,4 +119,8 @@ func createUserIfNotExists(c *gin.Context, sub string) error {
 	// Create user
 	_, err = connection.Exec("INSERT INTO users (id) VALUES ($1)", sub)
 	return err
+}
+
+func unixTimeInOneHour() int64 {
+	return time.Now().Add(time.Hour).Unix()
 }

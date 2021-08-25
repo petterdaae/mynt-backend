@@ -29,6 +29,18 @@ func SetCookie(c *gin.Context, name, value string, minutes int) {
 	http.SetCookie(c.Writer, cookie)
 }
 
+func SetUnsafeCookie(c *gin.Context, name, value string, minutes int) {
+	cookie := &http.Cookie{
+		Name:     name,
+		Value:    value,
+		MaxAge:   minutes * 60,
+		Secure:   c.Request.TLS != nil,
+		HttpOnly: false,
+		Path:     "/",
+	}
+	http.SetCookie(c.Writer, cookie)
+}
+
 func Base64Encode(s string) string {
 	return base64.RawURLEncoding.EncodeToString([]byte(s))
 }
