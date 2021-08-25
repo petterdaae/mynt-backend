@@ -23,22 +23,25 @@ func Get(c *gin.Context) {
 	connection, err := database.Connect()
 	if err != nil {
 		utils.InternalServerError(c, fmt.Errorf("database connection failed: %w", err))
+		return
 	}
 	defer connection.Close()
 
 	rows, err := connection.Query("SELECT id, account_number, name, available, balance FROM accounts WHERE user_id = $1", sub)
 	if err != nil {
 		utils.InternalServerError(c, fmt.Errorf("database query failed: %w", err))
+		return
 	}
 	defer rows.Close()
 
-	var accounts []Account
+	accounts := []Account{}
 
 	for rows.Next() {
 		var account Account
 		err := rows.Scan(&account.ID, &account.AccountNumber, &account.Name, &account.Available, &account.Balance)
 		if err != nil {
 			utils.InternalServerError(c, fmt.Errorf("database scan failed: %w", err))
+			return
 		}
 		accounts = append(accounts, account)
 	}

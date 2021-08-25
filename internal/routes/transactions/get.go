@@ -24,6 +24,7 @@ func Get(c *gin.Context) {
 	connection, err := database.Connect()
 	if err != nil {
 		utils.InternalServerError(c, fmt.Errorf("failed to connect to database: %w", err))
+		return
 	}
 	defer connection.Close()
 
@@ -33,10 +34,11 @@ func Get(c *gin.Context) {
 	)
 	if err != nil {
 		utils.InternalServerError(c, fmt.Errorf("failed to query database: %w", err))
+		return
 	}
 	defer rows.Close()
 
-	var transactions []Transaction
+	transactions := []Transaction{}
 	for rows.Next() {
 		var transaction Transaction
 		err := rows.Scan(
