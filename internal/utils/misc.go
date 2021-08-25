@@ -18,6 +18,18 @@ func RandomString(n int) (string, error) {
 	return base64.RawURLEncoding.EncodeToString(b), nil
 }
 
+func SetCookieWithoutDomain(c *gin.Context, name, value string, minutes int) {
+	cookie := &http.Cookie{
+		Name:     name,
+		Value:    value,
+		MaxAge:   minutes * 60,
+		Secure:   true,
+		HttpOnly: true,
+		Path:     "/",
+	}
+	http.SetCookie(c.Writer, cookie)
+}
+
 func SetCookie(c *gin.Context, name, value string, minutes int) {
 	cookie := &http.Cookie{
 		Name:     name,
