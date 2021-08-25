@@ -32,6 +32,8 @@ spec:
               value: "https://api.mynt.daae.dev/auth/callback"
             - name: REDIRECT_TO_FRONTEND
               value: "https://mynt.daae.dev/authenticated/home"
+            - name: COOKIE_DOMAIN
+              value: "daae.dev"
             - name: JWT_SIGNING_SECRET
               valueFrom:
                 secretKeyRef:

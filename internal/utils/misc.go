@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"io"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,9 +23,10 @@ func SetCookie(c *gin.Context, name, value string, minutes int) {
 		Name:     name,
 		Value:    value,
 		MaxAge:   minutes * 60,
-		Secure:   c.Request.TLS != nil,
+		Secure:   true,
 		HttpOnly: true,
 		Path:     "/",
+		Domain:   os.Getenv("COOKIE_DOMAIN"),
 	}
 	http.SetCookie(c.Writer, cookie)
 }
@@ -34,9 +36,10 @@ func SetUnsafeCookie(c *gin.Context, name, value string, minutes int) {
 		Name:     name,
 		Value:    value,
 		MaxAge:   minutes * 60,
-		Secure:   c.Request.TLS != nil,
+		Secure:   true,
 		HttpOnly: false,
 		Path:     "/",
+		Domain:   os.Getenv("COOKIE_DOMAIN"),
 	}
 	http.SetCookie(c.Writer, cookie)
 }
