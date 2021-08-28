@@ -12,7 +12,7 @@ import (
 // Execute is the main entry point of this application
 func Execute() {
 	log.SetOutput(os.Stdout)
-	log.SetFormatter(&log.TextFormatter{ForceColors: true})
+	log.SetFormatter(&log.JSONFormatter{})
 
 	database := utils.InitDatabase()
 
