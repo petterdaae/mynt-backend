@@ -69,3 +69,14 @@ func IntToCurrency(amount int) float64 {
 	currencyScaleInDatabase := 100
 	return float64(amount) / float64(currencyScaleInDatabase)
 }
+
+func LevelFromStatusCode(statusCode int) string {
+	switch {
+	case statusCode >= 100 && statusCode < 400:
+		return "info"
+	case statusCode >= 300 && statusCode < 400:
+		return "warning"
+	default:
+		return "error"
+	}
+}

@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"encoding/json"
 	"mynt/internal/middleware"
 	"mynt/internal/routes/accounts"
 	"mynt/internal/routes/auth"
@@ -15,7 +16,27 @@ import (
 
 // SetupRoutes assigns functions to all the different routes
 func SetupRoutes(database *utils.Database) *gin.Engine {
-	r := gin.Default()
+	r := gin.New()
+
+	r.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
+		delete(param.Keys, "oauth2Config")
+		delete(param.Keys, "database")
+		delete(param.Keys, "oidcIDTokenVerifier")
+		delete(param.Keys, "oidcProvider")
+		bytes, _ := json.Marshal(map[string]interface{}{
+			"level":   utils.LevelFromStatusCode(param.StatusCode),
+			"method":  param.Method,
+			"path":    param.Path,
+			"status":  param.StatusCode,
+			"latency": param.Latency,
+			"ip":      param.ClientIP,
+			"context": param.Keys,
+			"error":   param.ErrorMessage,
+		})
+		return string(bytes) + "\n"
+	}))
+
+	r.Use(gin.Recovery())
 
 	// Middleware
 	r.Use(middleware.Cors())
