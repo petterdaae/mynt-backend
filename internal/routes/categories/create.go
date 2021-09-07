@@ -12,7 +12,7 @@ import (
 
 type CreateCategoryBody struct {
 	Name     string `json:"name"`
-	ParentID *int   `json:"parent_id"`
+	ParentID *int64 `json:"parent_id"`
 }
 
 func Create(c *gin.Context) {
@@ -39,16 +39,23 @@ func Create(c *gin.Context) {
 		return
 	}
 
-	_, err = connection.Exec(
-		"INSERT INTO categories (user_id, name, parent_id) VALUES ($1, $2, $3)",
+	var id int64
+	err = connection.QueryRow(
+		"INSERT INTO categories (user_id, name, parent_id) VALUES ($1, $2, $3) RETURNING id",
 		sub,
 		category.Name,
 		category.ParentID,
-	)
+	).Scan(&id)
 	if err != nil {
 		utils.InternalServerError(c, fmt.Errorf("insert failed: %w", err))
 		return
 	}
 
-	c.Status(http.StatusCreated)
+	newCategory := &Category{
+		ID:       id,
+		Name:     category.Name,
+		ParentID: category.ParentID,
+	}
+
+	c.JSON(http.StatusCreated, newCategory)
 }
