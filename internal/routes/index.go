@@ -5,6 +5,7 @@ import (
 	"mynt/internal/middleware"
 	"mynt/internal/routes/accounts"
 	"mynt/internal/routes/auth"
+	"mynt/internal/routes/categories"
 	"mynt/internal/routes/synchronize"
 	"mynt/internal/routes/transactions"
 	"mynt/internal/routes/user"
@@ -63,6 +64,7 @@ func SetupRoutes(database *utils.Database) *gin.Engine {
 	r.GET("/transactions", authGuard, transactions.List)
 	r.GET("/accounts", authGuard, accounts.List)
 	r.DELETE("/synchronize/delete", authGuard, synchronize.Delete)
+	r.GET("/categories", authGuard, categories.List)
 
 	return r
 }
