@@ -16,7 +16,7 @@ type Account struct {
 	Balance       int    `json:"balance"`
 }
 
-func Get(c *gin.Context) {
+func List(c *gin.Context) {
 	database, _ := c.MustGet("database").(*utils.Database)
 	sub := c.GetString("sub")
 
