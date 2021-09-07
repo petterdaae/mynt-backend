@@ -11,7 +11,7 @@ import (
 type Category struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`
-	ParentID int    `json:"parent_id"`
+	ParentID *int   `json:"parent_id"`
 }
 
 func List(c *gin.Context) {
