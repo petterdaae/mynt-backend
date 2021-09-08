@@ -10,5 +10,6 @@ import (
 
 func Signout(c *gin.Context) {
 	utils.RemoveCookie(c, "auth_token")
+	utils.RemoveCookie(c, "auth_expiry")
 	c.Redirect(http.StatusFound, os.Getenv("REDIRECT_TO_FRONTEND"))
 }
