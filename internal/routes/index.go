@@ -52,6 +52,7 @@ func SetupRoutes(database *utils.Database) *gin.Engine {
 	r.Use(utils.ConfigureOauth2)
 	r.GET("/auth/redirect", auth.Redirect)
 	r.GET("/auth/callback", auth.Callback)
+	r.GET("/auth/signout", auth.Signout)
 
 	// Public
 	r.GET("/health", health)

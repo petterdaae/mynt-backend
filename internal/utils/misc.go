@@ -43,6 +43,19 @@ func SetCookie(c *gin.Context, name, value string, minutes int) {
 	http.SetCookie(c.Writer, cookie)
 }
 
+func RemoveCookie(c *gin.Context, name string) {
+	cookie := &http.Cookie{
+		Name:     name,
+		Value:    "",
+		MaxAge:   -1,
+		Secure:   true,
+		HttpOnly: true,
+		Path:     "/",
+		Domain:   os.Getenv("COOKIE_DOMAIN"),
+	}
+	http.SetCookie(c.Writer, cookie)
+}
+
 func SetUnsafeCookie(c *gin.Context, name, value string, minutes int) {
 	cookie := &http.Cookie{
 		Name:     name,
