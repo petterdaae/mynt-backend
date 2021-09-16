@@ -1,4 +1,4 @@
-package synchronize
+package user
 
 import (
 	"fmt"
@@ -28,6 +28,12 @@ func Delete(c *gin.Context) {
 	_, err = connection.Exec(`DELETE FROM accounts WHERE user_id = $1`, sub)
 	if err != nil {
 		utils.InternalServerError(c, fmt.Errorf("failed to delete accounts: %w", err))
+		return
+	}
+
+	_, err = connection.Exec(`DELETE FROM categories WHERE user_id = $1`, sub)
+	if err != nil {
+		utils.InternalServerError(c, fmt.Errorf("failed to delete categories: %w", err))
 		return
 	}
 

@@ -62,12 +62,13 @@ func SetupRoutes(database *utils.Database) *gin.Engine {
 	authGuard := middleware.Auth(database)
 	r.GET("/authenticated", authGuard, authenticated)
 	r.PUT("/user/secrets/sbanken", authGuard, user.UpdateSbankenSecrets)
+	r.DELETE("/user/delete", authGuard, user.Delete)
 	r.POST("/synchronize/sbanken", authGuard, synchronize.Sbanken)
 	r.GET("/transactions", authGuard, transactions.List)
 	r.GET("/accounts", authGuard, accounts.List)
-	r.DELETE("/synchronize/delete", authGuard, synchronize.Delete)
 	r.GET("/categories", authGuard, categories.List)
 	r.POST("/categories", authGuard, categories.Create)
+	r.DELETE("/categories", authGuard, categories.Delete)
 
 	return r
 }

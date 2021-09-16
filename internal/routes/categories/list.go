@@ -25,7 +25,11 @@ func List(c *gin.Context) {
 	}
 	defer connection.Close()
 
-	rows, err := connection.Query("SELECT id, name, parent_id FROM categories WHERE user_id = $1", sub)
+	rows, err := connection.Query(
+		"SELECT id, name, parent_id FROM categories WHERE user_id = $1 AND (deleted != TRUE OR deleted is NULL)",
+		sub,
+	)
+
 	if err != nil {
 		utils.InternalServerError(c, fmt.Errorf("failed to query categories: %w", err))
 		return
