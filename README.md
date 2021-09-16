@@ -37,3 +37,11 @@ We currently only support data fetching from the Sbanken Open API platform. To o
 - Visit https://secure.sbanken.no/Home/Settings/BetaProgram and enable beta.
 - Then, visit https://secure.sbanken.no/Personal/ApiBeta/Info/ to obtain the credentials.
 - Note that it often takes some time (~10+ minutes) before theses credentials are valid.
+
+## Data model
+
+### Categories
+
+Field | Description
+- | -
+deleted | if true, the category and all sub-categories are considered deleted

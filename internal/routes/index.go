@@ -68,6 +68,7 @@ func SetupRoutes(database *utils.Database) *gin.Engine {
 	r.GET("/accounts", authGuard, accounts.List)
 	r.GET("/categories", authGuard, categories.List)
 	r.POST("/categories", authGuard, categories.Create)
+	r.DELETE("/categories", authGuard, categories.Delete)
 
 	return r
 }
