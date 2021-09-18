@@ -17,6 +17,11 @@ type Transaction struct {
 	Text           string `json:"text"`
 }
 
+type RequestBody struct {
+	FromDate string `json:"from_date"`
+	ToDate   string `json:"to_date"`
+}
+
 func List(c *gin.Context) {
 	database, _ := c.MustGet("database").(*utils.Database)
 	sub := c.GetString("sub")
@@ -28,10 +33,12 @@ func List(c *gin.Context) {
 	}
 	defer connection.Close()
 
+	params := c.Request.URL.Query()
+
 	rows, err := connection.Query(
-		"SELECT id, account_id, accounting_date, interest_date, amount, text FROM transactions WHERE user_id = $1",
-		sub,
-	)
+		"SELECT id, account_id, accounting_date, interest_date, amount, text FROM transactions WHERE user_id = $1 "+
+			"AND accounting_date >= $2 AND accounting_date <= $3",
+		sub, params["from_date"][0], params["to_date"][0])
 	if err != nil {
 		utils.InternalServerError(c, fmt.Errorf("failed to query database: %w", err))
 		return
