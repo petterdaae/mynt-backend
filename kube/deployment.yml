@@ -31,7 +31,7 @@ spec:
             - name: CALLBACK_URL
               value: "https://api.mynt.daae.dev/auth/callback"
             - name: REDIRECT_TO_FRONTEND
-              value: "https://mynt.daae.dev/authenticated/home"
+              value: "https://mynt.daae.dev/authenticated/transactions"
             - name: REDIRECT_TO_FRONTEND_SIGNOUT
               value: "https://mynt.daae.dev/"
             - name: COOKIE_DOMAIN
