@@ -13,7 +13,7 @@ type Transaction struct {
 	AccountID      string `json:"account_id"`
 	AccountingDate string `json:"accounting_date"`
 	InterestDate   string `json:"interest_date"`
-	Amount         int    `json:"amount"`
+	Amount         int64  `json:"amount"`
 	Text           string `json:"text"`
 }
 
