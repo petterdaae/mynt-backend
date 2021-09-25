@@ -15,6 +15,7 @@ type Transaction struct {
 	InterestDate   string `json:"interest_date"`
 	Amount         int64  `json:"amount"`
 	Text           string `json:"text"`
+	CategoryID     string `json:"category_id"`
 }
 
 func List(c *gin.Context) {
@@ -50,7 +51,20 @@ func List(c *gin.Context) {
 		)
 		if err != nil {
 			utils.InternalServerError(c, fmt.Errorf("failed to scan row: %w", err))
+			return
 		}
+
+		err = database.QueryRow(
+			&transaction.CategoryID,
+			"SELECT category_id FROM transactions_to_categories WHERE user_id = $1 AND transaction_id = $2 LIMIT 1",
+			sub,
+			transaction.ID,
+		)
+		if err != nil {
+			utils.InternalServerError(c, fmt.Errorf("failed to query transactions_to_categories: %w", err))
+			return
+		}
+
 		transactions = append(transactions, transaction)
 	}
 
