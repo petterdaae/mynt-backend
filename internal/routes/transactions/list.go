@@ -1,6 +1,8 @@
 package transactions
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"mynt/internal/utils"
 	"net/http"
@@ -15,7 +17,7 @@ type Transaction struct {
 	InterestDate   string `json:"interest_date"`
 	Amount         int64  `json:"amount"`
 	Text           string `json:"text"`
-	CategoryID     string `json:"category_id"`
+	CategoryID     *int64 `json:"category_id"`
 }
 
 func List(c *gin.Context) {
@@ -54,14 +56,20 @@ func List(c *gin.Context) {
 			return
 		}
 
-		err = database.QueryRow(
-			&transaction.CategoryID,
+		row, err := database.QueryRow(
 			"SELECT category_id FROM transactions_to_categories WHERE user_id = $1 AND transaction_id = $2 LIMIT 1",
 			sub,
 			transaction.ID,
 		)
 		if err != nil {
-			utils.InternalServerError(c, fmt.Errorf("failed to query transactions_to_categories: %w", err))
+			utils.InternalServerError(c, err)
+			return
+		}
+
+		err = row.Scan(&transaction.CategoryID)
+
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			utils.InternalServerError(c, fmt.Errorf("failed to scan row: %w", err))
 			return
 		}
 

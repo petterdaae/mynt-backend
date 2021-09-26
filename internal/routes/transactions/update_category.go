@@ -14,8 +14,8 @@ type RequestBody struct {
 }
 
 type Categorization struct {
-	CategoryID string `json:"category_id"`
-	Amount     int64  `json:"amount"`
+	CategoryID int64 `json:"category_id"`
+	Amount     int64 `json:"amount"`
 }
 
 func UpdateCategory(c *gin.Context) {
@@ -58,12 +58,16 @@ func UpdateCategory(c *gin.Context) {
 
 func GetTransaction(database *utils.Database, sub, transactionID string) (*Transaction, error) {
 	var transaction Transaction
-	err := database.QueryRow(&transaction, "SELECT * FROM transactions WHERE user_id = $1 AND id = $2", sub, transactionID)
+	row, err := database.QueryRow("SELECT id, amount FROM transactions WHERE user_id = $1 AND id = $2", sub, transactionID)
+	if err != nil {
+		return nil, err
+	}
+	err = row.Scan(&transaction.ID, &transaction.Amount)
 	return &transaction, err
 }
 
 func RemoveOldCategorization(databse *utils.Database, sub, transactionID string) error {
-	return databse.Exec("DELETE FROM transactions-to-categories WHERE user_id = $1 AND transaction_id = $2", sub, transactionID)
+	return databse.Exec("DELETE FROM transactions_to_categories WHERE user_id = $1 AND transaction_id = $2", sub, transactionID)
 }
 
 func ValidateCategorizations(categorizations []Categorization, transaction *Transaction) error {
@@ -82,7 +86,7 @@ func ValidateCategorizations(categorizations []Categorization, transaction *Tran
 func CreateCategorizations(database *utils.Database, sub, transactionID string, categorizations []Categorization) error {
 	for _, categorization := range categorizations {
 		err := database.Exec(
-			"INSERT INTO transactions-to-categories (user_id, transaction_id, category_id, amount) VALUES ($1, $2, $3, $4)",
+			"INSERT INTO transactions_to_categories (user_id, transaction_id, category_id, amount) VALUES ($1, $2, $3, $4)",
 			sub,
 			transactionID,
 			categorization.CategoryID,

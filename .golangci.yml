@@ -82,7 +82,7 @@ linters:
     - nakedret
     - noctx
     - nolintlint
-    - rowserrcheck
+    # - rowserrcheck
     - scopelint
     - staticcheck
     - structcheck
@@ -102,7 +102,7 @@ issues:
         - gocritic
       text: "unnecessaryDefer:"
     - path: pkg/golinters/scopelint.go
-      text: 'directive `//nolint:interfacer` is unused for linter interfacer'
+      text: "directive `//nolint:interfacer` is unused for linter interfacer"
 run:
   skip-dirs:
     - test/testdata_etc
