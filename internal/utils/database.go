@@ -69,22 +69,21 @@ func (d *Database) Query(query string, params ...interface{}) (*sql.Rows, error)
 		return nil, fmt.Errorf("failed to query database: %w", err)
 	}
 
+	if rows.Err() != nil {
+		return nil, fmt.Errorf("failed to query database: %w", rows.Err())
+	}
+
 	return rows, nil
 }
 
-func (d *Database) QueryRow(parsed interface{}, query string, params ...interface{}) error {
+func (d *Database) QueryRow(query string, params ...interface{}) (*sql.Row, error) {
 	connection, err := d.Connect()
 	if err != nil {
-		return fmt.Errorf("failed to connect to database: %w", err)
+		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 	defer connection.Close()
 
-	err = connection.QueryRow(query, params...).Scan(parsed)
-	if err == nil {
-		return fmt.Errorf("failed to query database: %w", err)
-	}
-
-	return nil
+	return connection.QueryRow(query, params...), nil
 }
 
 func (d *Database) Exec(query string, params ...interface{}) error {
@@ -95,7 +94,7 @@ func (d *Database) Exec(query string, params ...interface{}) error {
 	defer connection.Close()
 
 	_, err = connection.Exec(query, params...)
-	if err == nil {
+	if err != nil {
 		return fmt.Errorf("failed to query database: %w", err)
 	}
 
