@@ -57,7 +57,7 @@ func Create(c *gin.Context) {
 		ID:       id,
 		Name:     category.Name,
 		ParentID: category.ParentID,
-		Color:    category.Color,
+		Color:    &category.Color,
 	}
 
 	c.JSON(http.StatusCreated, newCategory)
