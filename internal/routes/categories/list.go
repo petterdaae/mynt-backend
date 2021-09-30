@@ -9,9 +9,10 @@ import (
 )
 
 type Category struct {
-	ID       int64  `json:"id"`
-	Name     string `json:"name"`
-	ParentID *int64 `json:"parent_id"`
+	ID       int64   `json:"id"`
+	Name     string  `json:"name"`
+	ParentID *int64  `json:"parent_id"`
+	Color    *string `json:"color"`
 }
 
 func List(c *gin.Context) {
@@ -26,7 +27,7 @@ func List(c *gin.Context) {
 	defer connection.Close()
 
 	rows, err := connection.Query(
-		"SELECT id, name, parent_id FROM categories WHERE user_id = $1 AND (deleted != TRUE OR deleted is NULL)",
+		"SELECT id, name, parent_id, color FROM categories WHERE user_id = $1 AND (deleted != TRUE OR deleted is NULL)",
 		sub,
 	)
 
@@ -43,6 +44,7 @@ func List(c *gin.Context) {
 			&category.ID,
 			&category.Name,
 			&category.ParentID,
+			&category.Color,
 		)
 		if err != nil {
 			utils.InternalServerError(c, fmt.Errorf("failed to scan row: %w", err))

@@ -12,6 +12,7 @@ import (
 
 type CreateCategoryBody struct {
 	Name     string `json:"name"`
+	Color    string `json:"color"`
 	ParentID *int64 `json:"parent_id"`
 }
 
@@ -41,10 +42,11 @@ func Create(c *gin.Context) {
 
 	var id int64
 	err = connection.QueryRow(
-		"INSERT INTO categories (user_id, name, parent_id) VALUES ($1, $2, $3) RETURNING id",
+		"INSERT INTO categories (user_id, name, parent_id, color) VALUES ($1, $2, $3, $4) RETURNING id",
 		sub,
 		category.Name,
 		category.ParentID,
+		category.Color,
 	).Scan(&id)
 	if err != nil {
 		utils.InternalServerError(c, fmt.Errorf("insert failed: %w", err))
@@ -55,6 +57,7 @@ func Create(c *gin.Context) {
 		ID:       id,
 		Name:     category.Name,
 		ParentID: category.ParentID,
+		Color:    &category.Color,
 	}
 
 	c.JSON(http.StatusCreated, newCategory)
