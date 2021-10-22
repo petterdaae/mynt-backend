@@ -7,10 +7,24 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Spending struct {
-	CategoryID int64  `json:"category_id"`
+type RawSpending struct {
+	CategoryID *int64 `json:"category_id"`
 	Amount     int64  `json:"amount"`
 	ParentID   *int64 `json:"parent_id"`
+}
+
+type Spending struct {
+	CategoryID *int64 `json:"category_id"`
+	Amount     int64  `json:"amount"`
+}
+
+type Category struct {
+	ID       *int64 `json:"id"`
+	ParentID *int64 `json:"parent_id"`
+}
+
+type Result struct {
+	Spendings []Spending
 }
 
 func List(c *gin.Context) {
@@ -18,6 +32,30 @@ func List(c *gin.Context) {
 	sub := c.GetString("sub")
 
 	rows, err := database.Query(
+		`SELECT id, parent_id
+		FROM categories
+		WHERE user_id = $1
+		AND DELETED is NULL`,
+		sub,
+	)
+	if err != nil {
+		utils.InternalServerError(c, err)
+		return
+	}
+	defer rows.Close()
+
+	categories := []Category{}
+	for rows.Next() {
+		var category Category
+		err = rows.Scan(&category.ID, &category.ParentID)
+		if err != nil {
+			utils.InternalServerError(c, err)
+			return
+		}
+		categories = append(categories, category)
+	}
+
+	rows, err = database.Query(
 		`SELECT tc.category_id, SUM(tc.amount), c.parent_id
 		FROM transactions_to_categories AS tc, transactions AS t, categories AS c
 		WHERE tc.transaction_id = t.id
@@ -37,35 +75,44 @@ func List(c *gin.Context) {
 	}
 	defer rows.Close()
 
-	spendings := []*Spending{}
+	rawSpendings := []RawSpending{}
 	for rows.Next() {
-		var spending Spending
+		var spending RawSpending
 		err := rows.Scan(&spending.CategoryID, &spending.Amount, &spending.ParentID)
 		if err != nil {
 			utils.InternalServerError(c, err)
 			return
 		}
-		spendings = append(spendings, &spending)
+		rawSpendings = append(rawSpendings, spending)
 	}
 
-	groupSpendings(nil, spendings)
+	result := Result{}
+	groupSpendings(nil, &rawSpendings, &categories, &result)
 
-	c.JSON(http.StatusOK, spendings)
+	c.JSON(http.StatusOK, result.Spendings)
 }
 
-func groupSpendings(categoryID *int64, spendings []*Spending) int64 {
-	var sum int64
-	for _, spending := range spendings {
-		if spending.ParentID == categoryID {
-			sum += spending.Amount
-			childSum := groupSpendings(&spending.CategoryID, spendings)
-			sum += childSum
+func groupSpendings(categoryID *int64, rawSpendings *[]RawSpending, categories *[]Category, result *Result) int64 {
+	spending := Spending{
+		CategoryID: categoryID,
+		Amount:     0,
+	}
+
+	for _, rawSpending := range *rawSpendings {
+		if categoryID != nil && *rawSpending.CategoryID == *categoryID {
+			spending.Amount += rawSpending.Amount
 		}
 	}
-	for _, spending := range spendings {
-		if &spending.CategoryID == categoryID {
-			spending.Amount = sum + spending.Amount
+
+	for _, category := range *categories {
+		if categoryID == nil && category.ParentID == nil {
+			spending.Amount += groupSpendings(category.ID, rawSpendings, categories, result)
+		} else if categoryID != nil && category.ParentID != nil && *category.ParentID == *categoryID {
+			spending.Amount += groupSpendings(category.ID, rawSpendings, categories, result)
 		}
 	}
-	return sum
+
+	result.Spendings = append(result.Spendings, spending)
+
+	return spending.Amount
 }
