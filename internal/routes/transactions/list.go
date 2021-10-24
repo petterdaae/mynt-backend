@@ -1,8 +1,6 @@
 package transactions
 
 import (
-	"database/sql"
-	"errors"
 	"fmt"
 	"mynt/internal/utils"
 	"net/http"
@@ -25,11 +23,11 @@ func List(c *gin.Context) {
 	sub := c.GetString("sub")
 
 	rows, err := database.Query(
-		`SELECT id, account_id, accounting_date, interest_date, amount, text 
-		 FROM transactions 
-		 WHERE user_id = $1 
-	     AND accounting_date >= $2 
-		 AND accounting_date <= $3`,
+		`SELECT t.id, t.account_id, t.accounting_date, t.interest_date, t.amount, t.text, tc.category_id
+		FROM transactions AS t LEFT JOIN transactions_to_categories AS tc ON t.id = tc.transaction_id
+		WHERE t.user_id = $1
+		AND accounting_date >= $2
+		AND accounting_date <= $3`,
 		sub,
 		c.Query("from_date"),
 		c.Query("to_date"),
@@ -50,25 +48,9 @@ func List(c *gin.Context) {
 			&transaction.InterestDate,
 			&transaction.Amount,
 			&transaction.Text,
+			&transaction.CategoryID,
 		)
 		if err != nil {
-			utils.InternalServerError(c, fmt.Errorf("failed to scan row: %w", err))
-			return
-		}
-
-		row, err := database.QueryRow(
-			"SELECT category_id FROM transactions_to_categories WHERE user_id = $1 AND transaction_id = $2 LIMIT 1",
-			sub,
-			transaction.ID,
-		)
-		if err != nil {
-			utils.InternalServerError(c, err)
-			return
-		}
-
-		err = row.Scan(&transaction.CategoryID)
-
-		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			utils.InternalServerError(c, fmt.Errorf("failed to scan row: %w", err))
 			return
 		}
