@@ -27,7 +27,8 @@ func List(c *gin.Context) {
 		FROM transactions AS t LEFT JOIN transactions_to_categories AS tc ON t.id = tc.transaction_id
 		WHERE t.user_id = $1
 		AND accounting_date >= $2
-		AND accounting_date <= $3`,
+		AND accounting_date <= $3
+		ORDER BY accounting_date DESC`,
 		sub,
 		c.Query("from_date"),
 		c.Query("to_date"),

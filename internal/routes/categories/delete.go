@@ -38,11 +38,39 @@ func Delete(c *gin.Context) {
 		return
 	}
 
-	_, err = connection.Exec("UPDATE categories SET deleted = TRUE WHERE user_id = $1 AND id = $2", sub, body.ID)
+	err = recursiveDelete(body.ID, sub, database)
 	if err != nil {
 		utils.InternalServerError(c, fmt.Errorf("failed to query categories: %w", err))
 		return
 	}
 
 	c.Status(http.StatusOK)
+}
+
+func recursiveDelete(categoryID int64, sub string, database *utils.Database) error {
+	rows, err := database.Query("SELECT id FROM categories WHERE parent_id = $1 AND user_id = $2", categoryID, sub)
+	if err != nil {
+		return fmt.Errorf("failed to find sub category id's: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var id int64
+		err = rows.Scan(&id)
+		if err != nil {
+			return fmt.Errorf("failed to scan row: %w", err)
+		}
+
+		err = recursiveDelete(id, sub, database)
+		if err != nil {
+			return fmt.Errorf("recursive call failed: %w", err)
+		}
+	}
+
+	err = database.Exec("DELETE FROM categories WHERE id = $1 AND user_id = $2", categoryID, sub)
+	if err != nil {
+		return fmt.Errorf("failed to delete category: %w", err)
+	}
+
+	return nil
 }
