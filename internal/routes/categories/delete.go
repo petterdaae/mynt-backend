@@ -40,7 +40,7 @@ func Delete(c *gin.Context) {
 
 	err = recursiveDelete(body.ID, sub, database)
 	if err != nil {
-		utils.InternalServerError(c, fmt.Errorf("failed to query categories: %w", err))
+		utils.InternalServerError(c, fmt.Errorf("error occurred when deleting category: %w", err))
 		return
 	}
 
@@ -70,6 +70,11 @@ func recursiveDelete(categoryID int64, sub string, database *utils.Database) err
 	err = database.Exec("DELETE FROM categories WHERE id = $1 AND user_id = $2", categoryID, sub)
 	if err != nil {
 		return fmt.Errorf("failed to delete category: %w", err)
+	}
+
+	err = database.Exec("DELETE from transactions_to_categories WHERE category_id = $1", categoryID)
+	if err != nil {
+		return fmt.Errorf("failed to delete rows from transactions_to_categories: %w", err)
 	}
 
 	return nil

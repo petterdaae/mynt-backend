@@ -37,5 +37,11 @@ func Delete(c *gin.Context) {
 		return
 	}
 
+	err = database.Exec("DELETE FROM transactions_to_categories WHERE user_id = $1", sub)
+	if err != nil {
+		utils.InternalServerError(c, fmt.Errorf("failed to delete transactions_to_categories: %w", err))
+		return
+	}
+
 	c.String(http.StatusOK, "Success")
 }
