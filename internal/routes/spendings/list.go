@@ -66,8 +66,8 @@ func List(c *gin.Context) {
 		AND t.accounting_date <= $3
 		GROUP BY tc.category_id, c.id`,
 		sub,
-		c.Query("from_date"),
-		c.Query("to_date"),
+		c.Query("from_date")+"T00:00:00",
+		c.Query("to_date")+"T00:00:00",
 	)
 	if err != nil {
 		utils.InternalServerError(c, err)
