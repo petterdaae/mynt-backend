@@ -1,9 +1,9 @@
 package cmd
 
 import (
+	internal "backend/internal/routes"
+	utils "backend/internal/utils"
 	"fmt"
-	internal "mynt/internal/routes"
-	utils "mynt/internal/utils"
 	"os"
 
 	log "github.com/sirupsen/logrus"

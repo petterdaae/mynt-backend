@@ -1,16 +1,16 @@
 package routes
 
 import (
+	"backend/internal/middleware"
+	"backend/internal/routes/accounts"
+	"backend/internal/routes/auth"
+	"backend/internal/routes/categories"
+	"backend/internal/routes/spendings"
+	"backend/internal/routes/synchronize"
+	"backend/internal/routes/transactions"
+	"backend/internal/routes/user"
+	"backend/internal/utils"
 	"encoding/json"
-	"mynt/internal/middleware"
-	"mynt/internal/routes/accounts"
-	"mynt/internal/routes/auth"
-	"mynt/internal/routes/categories"
-	"mynt/internal/routes/spendings"
-	"mynt/internal/routes/synchronize"
-	"mynt/internal/routes/transactions"
-	"mynt/internal/routes/user"
-	"mynt/internal/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

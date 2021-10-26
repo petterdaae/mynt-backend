@@ -1,10 +1,10 @@
 package categories
 
 import (
+	"backend/internal/utils"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"mynt/internal/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

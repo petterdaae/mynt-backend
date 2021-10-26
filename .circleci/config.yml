@@ -4,7 +4,7 @@ jobs:
     docker:
       - image: circleci/buildpack-deps:stretch
     environment:
-      IMAGE_NAME: petterdaae/mynt
+      IMAGE_NAME: petterdaae/mynt-backend
     working_directory: ~/app
     steps:
       - checkout

@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"mynt/internal/utils"
+	"backend/internal/utils"
 	"net/http"
 	"os"
 

@@ -1,6 +1,6 @@
 FROM golang:buster
 
-WORKDIR $GOPATH/src/mynt
+WORKDIR $GOPATH/src/backend
 
 ENV  GO111MODULE=on
 COPY go.mod .
@@ -12,6 +12,6 @@ COPY internal/  ./internal
 COPY sql/       ./sql
 COPY main.go    main.go
 
-RUN go build -o mynt .
+RUN go build -o backend .
 
-CMD ["./mynt"]
+CMD ["./backend"]

@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mynt
+  name: mynt-backend
   namespace: default
   labels:
-    app: mynt
+    app: mynt-backend
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: mynt
+      app: mynt-backend
   template:
     metadata:
       labels:
-        app: mynt
+        app: mynt-backend
     spec:
       containers:
-        - name: mynt
-          image: petterdaae/mynt:$COMMIT_SHA1
+        - name: mynt-backend
+          image: petterdaae/mynt-backend:$COMMIT_SHA1
           ports:
             - containerPort: 80
               name: http

@@ -1,4 +1,4 @@
-module mynt
+module backend
 
 go 1.14
 
