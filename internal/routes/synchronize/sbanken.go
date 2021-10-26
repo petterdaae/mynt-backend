@@ -1,12 +1,12 @@
 package synchronize
 
 import (
+	"backend/internal/utils"
 	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"mynt/internal/utils"
 	"net/http"
 	"net/url"
 

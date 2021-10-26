@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"mynt/internal/utils"
+	"backend/internal/utils"
 	"net/http"
 
 	"github.com/coreos/go-oidc/v3/oidc"

@@ -1,8 +1,8 @@
 package user
 
 import (
+	"backend/internal/utils"
 	"fmt"
-	"mynt/internal/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

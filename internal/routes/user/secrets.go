@@ -1,9 +1,9 @@
 package user
 
 import (
+	"backend/internal/utils"
 	"encoding/json"
 	"io/ioutil"
-	"mynt/internal/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

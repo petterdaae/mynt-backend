@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"mynt/internal/utils"
+	"backend/internal/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

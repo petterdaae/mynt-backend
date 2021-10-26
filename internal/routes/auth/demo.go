@@ -1,8 +1,8 @@
 package auth
 
 import (
+	"backend/internal/utils"
 	"fmt"
-	"mynt/internal/utils"
 	"net/http"
 	"os"
 
