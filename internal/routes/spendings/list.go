@@ -14,8 +14,10 @@ type RawSpending struct {
 }
 
 type Spending struct {
-	CategoryID *int64 `json:"category_id"`
-	Amount     int64  `json:"amount"`
+	CategoryID     *int64 `json:"category_id"`
+	Amount         int64  `json:"amount"`
+	PositiveAmount int64  `json:"positive_amount"`
+	NegativeAmount int64  `json:"negative_amount"`
 }
 
 type Category struct {
@@ -92,7 +94,12 @@ func List(c *gin.Context) {
 	c.JSON(http.StatusOK, result.Spendings)
 }
 
-func groupSpendings(categoryID *int64, rawSpendings *[]RawSpending, categories *[]Category, result *Result) int64 {
+func groupSpendings(
+	categoryID *int64,
+	rawSpendings *[]RawSpending,
+	categories *[]Category,
+	result *Result,
+) (total, positive, negative int64) {
 	spending := Spending{
 		CategoryID: categoryID,
 		Amount:     0,
@@ -101,18 +108,29 @@ func groupSpendings(categoryID *int64, rawSpendings *[]RawSpending, categories *
 	for _, rawSpending := range *rawSpendings {
 		if categoryID != nil && *rawSpending.CategoryID == *categoryID {
 			spending.Amount += rawSpending.Amount
+			if rawSpending.Amount > 0 {
+				spending.PositiveAmount += rawSpending.Amount
+			} else {
+				spending.NegativeAmount += rawSpending.Amount
+			}
 		}
 	}
 
 	for _, category := range *categories {
 		if categoryID == nil && category.ParentID == nil {
-			spending.Amount += groupSpendings(category.ID, rawSpendings, categories, result)
+			a, p, n := groupSpendings(category.ID, rawSpendings, categories, result)
+			spending.Amount += a
+			spending.PositiveAmount += p
+			spending.NegativeAmount += n
 		} else if categoryID != nil && category.ParentID != nil && *category.ParentID == *categoryID {
-			spending.Amount += groupSpendings(category.ID, rawSpendings, categories, result)
+			a, p, n := groupSpendings(category.ID, rawSpendings, categories, result)
+			spending.Amount += a
+			spending.PositiveAmount += p
+			spending.NegativeAmount += n
 		}
 	}
 
 	result.Spendings = append(result.Spendings, spending)
 
-	return spending.Amount
+	return spending.Amount, spending.PositiveAmount, spending.NegativeAmount
 }
