@@ -30,8 +30,8 @@ func List(c *gin.Context) {
 		AND accounting_date <= $3
 		ORDER BY t.accounting_date, t.id DESC`,
 		sub,
-		c.Query("from_date"),
-		c.Query("to_date"),
+		c.Query("from_date")+"T00:00:00",
+		c.Query("to_date")+"T00:00:00",
 	)
 	if err != nil {
 		utils.InternalServerError(c, err)
