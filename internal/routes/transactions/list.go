@@ -1,22 +1,13 @@
 package transactions
 
 import (
+	"backend/internal/types"
 	"backend/internal/utils"
 	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
-
-type Transaction struct {
-	ID             string `json:"id"`
-	AccountID      string `json:"account_id"`
-	AccountingDate string `json:"accounting_date"`
-	InterestDate   string `json:"interest_date"`
-	Amount         int64  `json:"amount"`
-	Text           string `json:"text"`
-	CategoryID     *int64 `json:"category_id"`
-}
 
 func List(c *gin.Context) {
 	database, _ := c.MustGet("database").(*utils.Database)
@@ -39,9 +30,9 @@ func List(c *gin.Context) {
 	}
 	defer rows.Close()
 
-	transactions := []Transaction{}
+	transactions := []types.Transaction{}
 	for rows.Next() {
-		var transaction Transaction
+		var transaction types.Transaction
 		err := rows.Scan(
 			&transaction.ID,
 			&transaction.AccountID,

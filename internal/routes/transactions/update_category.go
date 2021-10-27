@@ -1,6 +1,7 @@
 package transactions
 
 import (
+	"backend/internal/types"
 	"backend/internal/utils"
 	"fmt"
 	"net/http"
@@ -56,8 +57,8 @@ func UpdateCategory(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-func GetTransaction(database *utils.Database, sub, transactionID string) (*Transaction, error) {
-	var transaction Transaction
+func GetTransaction(database *utils.Database, sub, transactionID string) (*types.Transaction, error) {
+	var transaction types.Transaction
 	row, err := database.QueryRow("SELECT id, amount FROM transactions WHERE user_id = $1 AND id = $2", sub, transactionID)
 	if err != nil {
 		return nil, err
@@ -70,7 +71,7 @@ func RemoveOldCategorization(databse *utils.Database, sub, transactionID string)
 	return databse.Exec("DELETE FROM transactions_to_categories WHERE user_id = $1 AND transaction_id = $2", sub, transactionID)
 }
 
-func ValidateCategorizations(categorizations []Categorization, transaction *Transaction) error {
+func ValidateCategorizations(categorizations []Categorization, transaction *types.Transaction) error {
 	var sum int64
 	for _, categorization := range categorizations {
 		sum += categorization.Amount
