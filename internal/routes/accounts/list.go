@@ -1,20 +1,13 @@
 package accounts
 
 import (
+	"backend/internal/types"
 	"backend/internal/utils"
 	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
-
-type Account struct {
-	ID            string `json:"id"`
-	AccountNumber string `json:"account_number"`
-	Name          string `json:"name"`
-	Available     int    `json:"available"`
-	Balance       int    `json:"balance"`
-}
 
 func List(c *gin.Context) {
 	database, _ := c.MustGet("database").(*utils.Database)
@@ -34,10 +27,10 @@ func List(c *gin.Context) {
 	}
 	defer rows.Close()
 
-	accounts := []Account{}
+	accounts := []types.Account{}
 
 	for rows.Next() {
-		var account Account
+		var account types.Account
 		err := rows.Scan(&account.ID, &account.AccountNumber, &account.Name, &account.Available, &account.Balance)
 		if err != nil {
 			utils.InternalServerError(c, fmt.Errorf("database scan failed: %w", err))

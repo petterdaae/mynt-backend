@@ -74,6 +74,8 @@ func SetupRoutes(database *utils.Database) *gin.Engine {
 	r.PUT("/transactions/update_category", authGuard, transactions.UpdateCategory)
 	r.GET("/spendings", authGuard, spendings.List)
 
+	r.POST("/demo/reset", synchronize.ResetDemoAccount)
+
 	return r
 }
 
