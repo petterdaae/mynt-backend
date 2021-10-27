@@ -28,7 +28,7 @@ func List(c *gin.Context) {
 		WHERE t.user_id = $1
 		AND accounting_date >= $2
 		AND accounting_date <= $3
-		ORDER BY accounting_date DESC`,
+		ORDER BY t.accounting_date, t.id DESC`,
 		sub,
 		c.Query("from_date"),
 		c.Query("to_date"),
