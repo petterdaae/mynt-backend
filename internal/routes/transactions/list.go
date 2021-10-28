@@ -13,13 +13,23 @@ func List(c *gin.Context) {
 	database, _ := c.MustGet("database").(*utils.Database)
 	sub := c.GetString("sub")
 
-	rows, err := database.Query(
+	transactionType := c.Query("type")
+	queryString :=
 		`SELECT t.id, t.account_id, t.accounting_date, t.interest_date, t.amount, t.text, tc.category_id
 		FROM transactions AS t LEFT JOIN transactions_to_categories AS tc ON t.id = tc.transaction_id
-		WHERE t.user_id = $1
-		AND accounting_date >= $2
+		WHERE t.user_id = $1`
+
+	if transactionType == "uncategorized" {
+		queryString += ` AND tc.category_id IS NULL `
+	}
+
+	queryString +=
+		`AND accounting_date >= $2
 		AND accounting_date <= $3
-		ORDER BY t.accounting_date DESC, t.id`,
+		ORDER BY t.accounting_date DESC, t.id`
+
+	rows, err := database.Query(
+		queryString,
 		sub,
 		c.Query("from_date")+"T00:00:00",
 		c.Query("to_date")+"T00:00:00",
