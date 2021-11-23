@@ -41,7 +41,7 @@ func ResetDemoAccount(c *gin.Context) {
 	for i := 0; i < 150; i++ {
 		amount := -rand.Int31n(50000) + 10000
 		text := shops[rand.Intn(len(shops))]
-		date := time.Unix(rand.Int63n(delta)+minDate, 0).Format("2006-01-02")
+		date := time.Unix(rand.Int63n(delta)+minDate, 0).Format("2006-01-02") + "T00:00:00"
 		check(database.Exec(
 			"INSERT INTO transactions (id, user_id, account_id, accounting_date, interest_date, amount, text, external_id) "+
 				"VALUES ($1, 'demo', '0', $2, $3, $4, $5, '123')",
