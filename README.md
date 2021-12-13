@@ -41,6 +41,7 @@ We currently only support data fetching from the Sbanken Open API platform. To o
 ## Required environment variables
 
 - GIN_MODE: release
+- ORIGIN: https://mynt.daae.dev
 - PORT: 80
 - CALLBACK_URL: https://api.mynt.daae.dev/auth/callback
 - REDIRECT_TO_FRONTEND: https://mynt.daae.dev/authenticated/transactions
