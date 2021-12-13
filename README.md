@@ -38,10 +38,20 @@ We currently only support data fetching from the Sbanken Open API platform. To o
 - Then, visit https://secure.sbanken.no/Personal/ApiBeta/Info/ to obtain the credentials.
 - Note that it often takes some time (~10+ minutes) before theses credentials are valid.
 
-## Data model
+## Required environment variables
 
-### Categories
-
-Field | Description
-- | -
-deleted | if true, the category and all sub-categories are considered deleted
+- GIN_MODE: release
+- PORT: 80
+- CALLBACK_URL: https://api.mynt.daae.dev/callback
+- REDIRECT_TO_FRONTEND: https://mynt.daae.dev/authenticated/transactions
+- REDIRECT_TO_FRONTEND_SIGNOUT: https://mynt.daae.dev
+- COOKIE_DOMAIN: daae.dev
+- JWT_SIGNING_SECRET
+- GOOGLE_AUTH_CLIENT_ID
+- GOOGLE_AUTH_CLIENT_SECRET
+- POSTGRES_HOST
+- POSTGRES_PORT
+- POSTGRES_USER
+- POSTGRES_PASSWORD
+- POSTGRES_DB
+- POSTGRES_SSL
