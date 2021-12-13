@@ -42,7 +42,7 @@ We currently only support data fetching from the Sbanken Open API platform. To o
 
 - GIN_MODE: release
 - PORT: 80
-- CALLBACK_URL: https://api.mynt.daae.dev/callback
+- CALLBACK_URL: https://api.mynt.daae.dev/auth/callback
 - REDIRECT_TO_FRONTEND: https://mynt.daae.dev/authenticated/transactions
 - REDIRECT_TO_FRONTEND_SIGNOUT: https://mynt.daae.dev
 - COOKIE_DOMAIN: daae.dev
