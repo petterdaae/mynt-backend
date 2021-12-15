@@ -15,7 +15,7 @@ func List(c *gin.Context) {
 
 	transactionType := c.Query("type")
 	queryString :=
-		`SELECT t.id, t.account_id, t.accounting_date, t.interest_date, t.amount, t.text, tc.category_id
+		`SELECT t.id, t.account_id, t.accounting_date, t.interest_date, t.amount, t.text, tc.category_id, t.custom_date
 		FROM transactions AS t LEFT JOIN transactions_to_categories AS tc ON t.id = tc.transaction_id
 		WHERE t.user_id = $1`
 
@@ -51,6 +51,7 @@ func List(c *gin.Context) {
 			&transaction.Amount,
 			&transaction.Text,
 			&transaction.CategoryID,
+			&transaction.CustomDate,
 		)
 		if err != nil {
 			utils.InternalServerError(c, fmt.Errorf("failed to scan row: %w", err))

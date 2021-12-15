@@ -8,9 +8,11 @@ import (
 )
 
 type RawSpending struct {
-	CategoryID *int64 `json:"category_id"`
-	Amount     int64  `json:"amount"`
-	ParentID   *int64 `json:"parent_id"`
+	CategoryID     *int64 `json:"category_id"`
+	Amount         int64  `json:"amount"`
+	ParentID       *int64 `json:"parent_id"`
+	PositiveAmount *int64 `json:"amount"`
+	NegativeAmount *int64 `json:"amount"`
 }
 
 type Spending struct {
@@ -58,18 +60,28 @@ func List(c *gin.Context) {
 	}
 
 	rows, err = database.Query(
-		`SELECT tc.category_id, SUM(tc.amount), c.parent_id
+		`SELECT 
+			tc.category_id, 
+			SUM(tc.amount), 
+			SUM(case when tc.amount >= 0 then tc.amount end) positive_amount, 
+			SUM(case when tc.amount < 0 then tc.amount end) as negative_amount, 
+			c.parent_id
 		FROM transactions_to_categories AS tc, transactions AS t, categories AS c
 		WHERE tc.transaction_id = t.id
 		AND tc.category_id = c.id
 		AND t.user_id = $1
 		AND tc.user_id = $1
-		AND t.accounting_date >= $2
-		AND t.accounting_date <= $3
+		AND (
+			(t.custom_date IS NOT NULL AND t.custom_date >= $4 AND t.custom_date <= $5)
+			OR
+			(t.custom_date IS NULL AND t.accounting_date >= $2 AND t.accounting_date <= $3)
+		)
 		GROUP BY tc.category_id, c.id`,
 		sub,
 		c.Query("from_date")+"T00:00:00",
 		c.Query("to_date")+"T00:00:00",
+		c.Query("from_date"),
+		c.Query("to_date"),
 	)
 	if err != nil {
 		utils.InternalServerError(c, err)
@@ -80,7 +92,7 @@ func List(c *gin.Context) {
 	rawSpendings := []RawSpending{}
 	for rows.Next() {
 		var spending RawSpending
-		err := rows.Scan(&spending.CategoryID, &spending.Amount, &spending.ParentID)
+		err := rows.Scan(&spending.CategoryID, &spending.Amount, &spending.PositiveAmount, &spending.NegativeAmount, &spending.ParentID)
 		if err != nil {
 			utils.InternalServerError(c, err)
 			return
@@ -101,17 +113,20 @@ func groupSpendings(
 	result *Result,
 ) (total, positive, negative int64) {
 	spending := Spending{
-		CategoryID: categoryID,
-		Amount:     0,
+		CategoryID:     categoryID,
+		Amount:         0,
+		PositiveAmount: 0,
+		NegativeAmount: 0,
 	}
 
 	for _, rawSpending := range *rawSpendings {
 		if categoryID != nil && *rawSpending.CategoryID == *categoryID {
 			spending.Amount += rawSpending.Amount
-			if rawSpending.Amount > 0 {
-				spending.PositiveAmount += rawSpending.Amount
-			} else {
-				spending.NegativeAmount += rawSpending.Amount
+			if rawSpending.PositiveAmount != nil {
+				spending.PositiveAmount += *rawSpending.PositiveAmount
+			}
+			if rawSpending.NegativeAmount != nil {
+				spending.NegativeAmount += *rawSpending.NegativeAmount
 			}
 		}
 	}
