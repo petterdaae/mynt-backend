@@ -58,6 +58,7 @@ func SetupRoutes(database *utils.Database) *gin.Engine {
 
 	// Public
 	r.GET("/health", health)
+	r.POST("/demo/reset", synchronize.ResetDemoAccount)
 
 	// Private
 	authGuard := middleware.Auth(database)
@@ -72,9 +73,8 @@ func SetupRoutes(database *utils.Database) *gin.Engine {
 	r.DELETE("/categories", authGuard, categories.Delete)
 	r.PUT("/categories/:id", authGuard, categories.Update)
 	r.PUT("/transactions/update_category", authGuard, transactions.UpdateCategory)
+	r.PUT("/transactions/update_custom_date", authGuard, transactions.UpdateCustomDate)
 	r.GET("/spendings", authGuard, spendings.List)
-
-	r.POST("/demo/reset", synchronize.ResetDemoAccount)
 
 	return r
 }
