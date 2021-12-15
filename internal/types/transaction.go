@@ -8,4 +8,5 @@ type Transaction struct {
 	Amount         int64  `json:"amount"`
 	Text           string `json:"text"`
 	CategoryID     *int64 `json:"category_id"`
+	CustomDate     string `json:"custom_date"`
 }
