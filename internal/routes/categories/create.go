@@ -14,6 +14,7 @@ type CreateCategoryBody struct {
 	Name     string `json:"name"`
 	Color    string `json:"color"`
 	ParentID *int64 `json:"parent_id"`
+	Ignore   bool   `json:"ignore"`
 }
 
 func Create(c *gin.Context) {
@@ -42,11 +43,12 @@ func Create(c *gin.Context) {
 
 	var id int64
 	err = connection.QueryRow(
-		"INSERT INTO categories (user_id, name, parent_id, color) VALUES ($1, $2, $3, $4) RETURNING id",
+		"INSERT INTO categories (user_id, name, parent_id, color, ignore) VALUES ($1, $2, $3, $4, $5) RETURNING id",
 		sub,
 		category.Name,
 		category.ParentID,
 		category.Color,
+		category.Ignore,
 	).Scan(&id)
 	if err != nil {
 		utils.InternalServerError(c, fmt.Errorf("insert failed: %w", err))
@@ -58,6 +60,7 @@ func Create(c *gin.Context) {
 		Name:     category.Name,
 		ParentID: category.ParentID,
 		Color:    &category.Color,
+		Ignore:   &category.Ignore,
 	}
 
 	c.JSON(http.StatusCreated, newCategory)

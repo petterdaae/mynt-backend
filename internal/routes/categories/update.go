@@ -9,8 +9,9 @@ import (
 )
 
 type UpdateCategoryBody struct {
-	Name  string `json:"name"`
-	Color string `json:"color"`
+	Name   string `json:"name"`
+	Color  string `json:"color"`
+	Ignore bool   `json:"ignore"`
 }
 
 func Update(c *gin.Context) {
@@ -25,11 +26,12 @@ func Update(c *gin.Context) {
 	}
 
 	err = database.Exec(
-		"UPDATE categories SET name = $2, color = $3 WHERE user_id = $1 AND id = $4",
+		"UPDATE categories SET name = $2, color = $3, ignore = $5 WHERE user_id = $1 AND id = $4",
 		sub,
 		category.Name,
 		category.Color,
 		c.Param("id"),
+		category.Ignore,
 	)
 	if err != nil {
 		utils.InternalServerError(c, fmt.Errorf("insert failed: %w", err))
@@ -37,8 +39,9 @@ func Update(c *gin.Context) {
 	}
 
 	updatedCategory := Category{
-		Name:  category.Name,
-		Color: &category.Color,
+		Name:   category.Name,
+		Color:  &category.Color,
+		Ignore: &category.Ignore,
 	}
 
 	row, err := database.QueryRow(
