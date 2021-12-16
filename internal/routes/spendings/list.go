@@ -71,6 +71,7 @@ func List(c *gin.Context) {
 		AND tc.category_id = c.id
 		AND t.user_id = $1
 		AND tc.user_id = $1
+		AND (c.ignore is NULL OR NOT c.ignore)
 		AND (
 			(t.custom_date IS NOT NULL AND t.custom_date >= $4 AND t.custom_date <= $5)
 			OR
