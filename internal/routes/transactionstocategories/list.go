@@ -1,4 +1,4 @@
-package spendings
+package transactionstocategories
 
 import (
 	"backend/internal/utils"
@@ -11,8 +11,8 @@ type RawSpending struct {
 	CategoryID     *int64 `json:"category_id"`
 	Amount         int64  `json:"amount"`
 	ParentID       *int64 `json:"parent_id"`
-	PositiveAmount *int64 `json:"positive_amount"`
-	NegativeAmount *int64 `json:"negative_amount"`
+	PositiveAmount *int64 `json:"positive_mount"`
+	NegativeAmount *int64 `json:"negative_mount"`
 }
 
 type Spending struct {

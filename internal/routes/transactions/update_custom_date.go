@@ -9,7 +9,7 @@ import (
 )
 
 type UpdateCustomDateBody struct {
-	Id         string  `json:"id"`
+	ID         string  `json:"id"`
 	CustomDate *string `json:"customDate"`
 }
 
@@ -27,7 +27,7 @@ func UpdateCustomDate(c *gin.Context) {
 	err = database.Exec(
 		"UPDATE transactions SET custom_date = $3 WHERE user_id = $1 AND id = $2",
 		sub,
-		body.Id,
+		body.ID,
 		body.CustomDate,
 	)
 	if err != nil {
