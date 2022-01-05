@@ -1,7 +1,7 @@
 package categorizations
 
 import (
-	"backend/internal/ng/types"
+	"backend/internal/types"
 	"backend/internal/utils"
 	"fmt"
 	"net/http"
@@ -13,7 +13,7 @@ type RequestBody struct {
 	TransactionID   string `json:"transactionId"`
 	Categorizations []struct {
 		CategoryID int64 `json:"categoryId"`
-		Amount     int64 `json:amount`
+		Amount     int64 `json:"amount"`
 	} `json:"categorizations"`
 }
 

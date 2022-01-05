@@ -1,7 +1,7 @@
 package transactions
 
 import (
-	"backend/internal/ng/types"
+	"backend/internal/types"
 	"backend/internal/utils"
 	"fmt"
 	"net/http"

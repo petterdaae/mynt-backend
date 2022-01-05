@@ -55,13 +55,5 @@ func Create(c *gin.Context) {
 		return
 	}
 
-	newCategory := &Category{
-		ID:       id,
-		Name:     category.Name,
-		ParentID: category.ParentID,
-		Color:    &category.Color,
-		Ignore:   &category.Ignore,
-	}
-
-	c.JSON(http.StatusCreated, newCategory)
+	c.Status(http.StatusCreated)
 }
