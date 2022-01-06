@@ -13,7 +13,7 @@ import (
 type CreateCategoryBody struct {
 	Name     string `json:"name"`
 	Color    string `json:"color"`
-	ParentID *int64 `json:"parent_id"`
+	ParentID *int64 `json:"parentId"`
 	Ignore   bool   `json:"ignore"`
 }
 

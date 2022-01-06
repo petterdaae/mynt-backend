@@ -66,7 +66,7 @@ func GetTransaction(database *utils.Database, sub, transactionID string) (*types
 }
 
 func RemoveOldCategorizations(databse *utils.Database, sub, transactionID string) error {
-	return databse.Exec("DELETE FROM transactions_to_categories WHERE user_id = $1 AND transaction_id = $2", sub, transactionID)
+	return databse.Exec("DELETE FROM categorizations WHERE user_id = $1 AND transaction_id = $2", sub, transactionID)
 }
 
 func ValidateCategorizations(body RequestBody, transaction *types.Transaction) error {
