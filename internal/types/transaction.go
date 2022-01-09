@@ -2,11 +2,10 @@ package types
 
 type Transaction struct {
 	ID             string  `json:"id"`
-	AccountID      string  `json:"account_id"`
-	AccountingDate string  `json:"accounting_date"`
-	InterestDate   string  `json:"interest_date"`
+	AccountID      string  `json:"accountId"`
+	AccountingDate string  `json:"accountingDate"`
+	InterestDate   string  `json:"interestDate"`
+	CustomDate     *string `json:"customDate"`
 	Amount         int64   `json:"amount"`
 	Text           string  `json:"text"`
-	CategoryID     *int64  `json:"category_id"`
-	CustomDate     *string `json:"customDate"`
 }

@@ -1,4 +1,4 @@
-package transactions
+package categorizations
 
 import (
 	"backend/internal/types"
@@ -10,16 +10,14 @@ import (
 )
 
 type RequestBody struct {
-	TransactionID   string           `json:"transaction_id"`
-	Categorizations []Categorization `json:"categorizations"`
+	TransactionID   string `json:"transactionId"`
+	Categorizations []struct {
+		CategoryID int64 `json:"categoryId"`
+		Amount     int64 `json:"amount"`
+	} `json:"categorizations"`
 }
 
-type Categorization struct {
-	CategoryID int64 `json:"category_id"`
-	Amount     int64 `json:"amount"`
-}
-
-func UpdateCategory(c *gin.Context) {
+func UpdateCategorizationsForTransaction(c *gin.Context) {
 	database, _ := c.MustGet("database").(*utils.Database)
 	sub := c.GetString("sub")
 
@@ -36,19 +34,19 @@ func UpdateCategory(c *gin.Context) {
 		return
 	}
 
-	err = RemoveOldCategorization(database, sub, transaction.ID)
+	err = RemoveOldCategorizations(database, sub, transaction.ID)
 	if err != nil {
 		utils.BadRequest(c, err)
 		return
 	}
 
-	err = ValidateCategorizations(body.Categorizations, transaction)
+	err = ValidateCategorizations(body, transaction)
 	if err != nil {
 		utils.BadRequest(c, err)
 		return
 	}
 
-	err = CreateCategorizations(database, sub, transaction.ID, body.Categorizations)
+	err = CreateCategorizations(database, sub, transaction.ID, body)
 	if err != nil {
 		utils.InternalServerError(c, err)
 		return
@@ -67,13 +65,13 @@ func GetTransaction(database *utils.Database, sub, transactionID string) (*types
 	return &transaction, err
 }
 
-func RemoveOldCategorization(databse *utils.Database, sub, transactionID string) error {
-	return databse.Exec("DELETE FROM transactions_to_categories WHERE user_id = $1 AND transaction_id = $2", sub, transactionID)
+func RemoveOldCategorizations(databse *utils.Database, sub, transactionID string) error {
+	return databse.Exec("DELETE FROM categorizations WHERE user_id = $1 AND transaction_id = $2", sub, transactionID)
 }
 
-func ValidateCategorizations(categorizations []Categorization, transaction *types.Transaction) error {
+func ValidateCategorizations(body RequestBody, transaction *types.Transaction) error {
 	var sum int64
-	for _, categorization := range categorizations {
+	for _, categorization := range body.Categorizations {
 		sum += categorization.Amount
 	}
 
@@ -84,10 +82,10 @@ func ValidateCategorizations(categorizations []Categorization, transaction *type
 	return nil
 }
 
-func CreateCategorizations(database *utils.Database, sub, transactionID string, categorizations []Categorization) error {
-	for _, categorization := range categorizations {
+func CreateCategorizations(database *utils.Database, sub, transactionID string, body RequestBody) error {
+	for _, categorization := range body.Categorizations {
 		err := database.Exec(
-			"INSERT INTO transactions_to_categories (user_id, transaction_id, category_id, amount) VALUES ($1, $2, $3, $4)",
+			"INSERT INTO categorizations (user_id, transaction_id, category_id, amount) VALUES ($1, $2, $3, $4)",
 			sub,
 			transactionID,
 			categorization.CategoryID,

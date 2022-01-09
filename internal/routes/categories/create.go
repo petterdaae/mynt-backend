@@ -13,7 +13,7 @@ import (
 type CreateCategoryBody struct {
 	Name     string `json:"name"`
 	Color    string `json:"color"`
-	ParentID *int64 `json:"parent_id"`
+	ParentID *int64 `json:"parentId"`
 	Ignore   bool   `json:"ignore"`
 }
 
@@ -55,13 +55,5 @@ func Create(c *gin.Context) {
 		return
 	}
 
-	newCategory := &Category{
-		ID:       id,
-		Name:     category.Name,
-		ParentID: category.ParentID,
-		Color:    &category.Color,
-		Ignore:   &category.Ignore,
-	}
-
-	c.JSON(http.StatusCreated, newCategory)
+	c.Status(http.StatusCreated)
 }

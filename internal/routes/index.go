@@ -5,7 +5,7 @@ import (
 	"backend/internal/routes/accounts"
 	"backend/internal/routes/auth"
 	"backend/internal/routes/categories"
-	"backend/internal/routes/spendings"
+	"backend/internal/routes/categorizations"
 	"backend/internal/routes/synchronize"
 	"backend/internal/routes/transactions"
 	"backend/internal/routes/user"
@@ -56,25 +56,24 @@ func SetupRoutes(database *utils.Database) *gin.Engine {
 	r.GET("/auth/signout", auth.Signout)
 	r.GET("/auth/demo", auth.Demo)
 
-	// Public
+	// Unauthenticated
 	r.GET("/health", health)
 	r.POST("/demo/reset", synchronize.ResetDemoAccount)
 
-	// Private
+	// Authenticated
 	authGuard := middleware.Auth(database)
 	r.GET("/authenticated", authGuard, authenticated)
 	r.PUT("/user/secrets/sbanken", authGuard, user.UpdateSbankenSecrets)
-	r.DELETE("/user/delete", authGuard, user.Delete)
 	r.POST("/synchronize/sbanken", authGuard, synchronize.Sbanken)
 	r.GET("/transactions", authGuard, transactions.List)
-	r.GET("/accounts", authGuard, accounts.List)
+	r.PUT("/transactions", authGuard, transactions.Update)
+	r.GET("/categorizations", authGuard, categorizations.List)
+	r.PUT("/categorizations", authGuard, categorizations.UpdateCategorizationsForTransaction)
 	r.GET("/categories", authGuard, categories.List)
+	r.PUT("/categories", authGuard, categories.Update)
 	r.POST("/categories", authGuard, categories.Create)
 	r.DELETE("/categories", authGuard, categories.Delete)
-	r.PUT("/categories/:id", authGuard, categories.Update)
-	r.PUT("/transactions/update_category", authGuard, transactions.UpdateCategory)
-	r.PUT("/transactions/update_custom_date", authGuard, transactions.UpdateCustomDate)
-	r.GET("/spendings", authGuard, spendings.List)
+	r.GET("/accounts", authGuard, accounts.List)
 
 	return r
 }

@@ -1,20 +1,13 @@
 package categories
 
 import (
+	"backend/internal/types"
 	"backend/internal/utils"
 	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
-
-type Category struct {
-	ID       int64   `json:"id"`
-	Name     string  `json:"name"`
-	ParentID *int64  `json:"parent_id"`
-	Color    *string `json:"color"`
-	Ignore   *bool   `json:"ignore"`
-}
 
 func List(c *gin.Context) {
 	database, _ := c.MustGet("database").(*utils.Database)
@@ -38,9 +31,9 @@ func List(c *gin.Context) {
 	}
 	defer rows.Close()
 
-	categories := []Category{}
+	categories := []types.Category{}
 	for rows.Next() {
-		var category Category
+		var category types.Category
 		err := rows.Scan(
 			&category.ID,
 			&category.Name,
