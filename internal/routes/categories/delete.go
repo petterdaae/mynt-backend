@@ -72,9 +72,9 @@ func recursiveDelete(categoryID int64, sub string, database *utils.Database) err
 		return fmt.Errorf("failed to delete category: %w", err)
 	}
 
-	err = database.Exec("DELETE from transactions_to_categories WHERE category_id = $1", categoryID)
+	err = database.Exec("DELETE from categorizations WHERE category_id = $1", categoryID)
 	if err != nil {
-		return fmt.Errorf("failed to delete rows from transactions_to_categories: %w", err)
+		return fmt.Errorf("failed to delete rows from categorizations: %w", err)
 	}
 
 	return nil
