@@ -28,7 +28,7 @@ func ResetDemoAccount(c *gin.Context) {
 	check(database.Exec("DELETE from accounts WHERE user_id = 'demo'"))
 	check(database.Exec("DELETE from transactions WHERE user_id = 'demo'"))
 	check(database.Exec("DELETE from categories WHERE user_id = 'demo'"))
-	check(database.Exec("DELETE from transactions_to_categories WHERE user_id = 'demo'"))
+	check(database.Exec("DELETE from categorizations WHERE user_id = 'demo'"))
 
 	minDate := time.Date(2021, 8, 0, 0, 0, 0, 0, time.UTC).Unix()
 	maxDate := time.Date(2021, 12, 0, 0, 0, 0, 0, time.UTC).Unix()
