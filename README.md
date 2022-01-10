@@ -1,5 +1,7 @@
 # mynt-backend
 
+Mynt is a web-application for personal finance. This repository contains the backend code that powers the frontend, [mynt-frontend](https://github.com/petterdaae/mynt-frontend).
+
 ## Setting up a development environment
 - [Install go](https://golang.org/doc/install)
 - [Install sql-migrate](https://github.com/rubenv/sql-migrate)
@@ -12,6 +14,27 @@
 - Create a `.env` file similar to `.env.sample`. `JWT_SIGNING_SECRET` can be whatever you want. For the `GOOGLE_AUTH_CLIENT*` variables, you need to visist the [Google API Console](https://console.developers.google.com/) to obtain Oauth 2.0 credentials.
 - Run `docker-compose up` in the root of the repository to run a local development database.
 - Run `go run main.go` to start the application.
+
+## Required environment variables
+- GIN_MODE: release
+- ORIGIN: https://mynt.daae.dev
+- PORT: 80
+- CALLBACK_URL: https://api.mynt.daae.dev/auth/callback
+- REDIRECT_TO_FRONTEND: https://mynt.daae.dev/authenticated/transactions
+- REDIRECT_TO_FRONTEND_SIGNOUT: https://mynt.daae.dev
+- COOKIE_DOMAIN: daae.dev
+- JWT_SIGNING_SECRET
+- GOOGLE_AUTH_CLIENT_ID
+- GOOGLE_AUTH_CLIENT_SECRET
+- POSTGRES_HOST
+- POSTGRES_PORT
+- POSTGRES_USER
+- POSTGRES_PASSWORD
+- POSTGRES_DB
+- POSTGRES_SSL
+
+## Deployment
+The master branch is automatically deployed to [https://api.mynt.daae.dev](https://api.mynt.daae.dev) in digital ocean.
 
 ## Authentication
 - We currently use google for authentication.
@@ -31,28 +54,3 @@
 - The application will make sure that all the migrations are up to date when starting (which means that you don't have to do these updates manually in other environments), but you can run them locally with `sql-migrate up`.
 - You can test that the `down` version of your migration works with `sql-migrate redo`.
 - Always be carefull with database migrations, we generally don't want to do anything else than creating new tables and new fields. But if you have to, consider doing these things manually instead.
-
-## How to get Sbanken credentials
-We currently only support data fetching from the Sbanken Open API platform. To obtain a client id and secret:
-- Visit https://secure.sbanken.no/Home/Settings/BetaProgram and enable beta.
-- Then, visit https://secure.sbanken.no/Personal/ApiBeta/Info/ to obtain the credentials.
-- Note that it often takes some time (~10+ minutes) before theses credentials are valid.
-
-## Required environment variables
-
-- GIN_MODE: release
-- ORIGIN: https://mynt.daae.dev
-- PORT: 80
-- CALLBACK_URL: https://api.mynt.daae.dev/auth/callback
-- REDIRECT_TO_FRONTEND: https://mynt.daae.dev/authenticated/transactions
-- REDIRECT_TO_FRONTEND_SIGNOUT: https://mynt.daae.dev
-- COOKIE_DOMAIN: daae.dev
-- JWT_SIGNING_SECRET
-- GOOGLE_AUTH_CLIENT_ID
-- GOOGLE_AUTH_CLIENT_SECRET
-- POSTGRES_HOST
-- POSTGRES_PORT
-- POSTGRES_USER
-- POSTGRES_PASSWORD
-- POSTGRES_DB
-- POSTGRES_SSL
