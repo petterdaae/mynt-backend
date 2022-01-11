@@ -21,7 +21,8 @@ func List(c *gin.Context) {
 	defer connection.Close()
 
 	rows, err := connection.Query(
-		"SELECT id, name, parent_id, color, ignore FROM categories WHERE user_id = $1 AND (deleted != TRUE OR deleted is NULL) ORDER BY name",
+		"SELECT id, name, parent_id, color, ignore, budget FROM categories WHERE user_id = $1 "+
+			"AND (deleted != TRUE OR deleted is NULL) ORDER BY name",
 		sub,
 	)
 
@@ -40,6 +41,7 @@ func List(c *gin.Context) {
 			&category.ParentID,
 			&category.Color,
 			&category.Ignore,
+			&category.Budget,
 		)
 		if err != nil {
 			utils.InternalServerError(c, fmt.Errorf("failed to scan row: %w", err))
