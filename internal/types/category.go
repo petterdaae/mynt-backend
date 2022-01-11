@@ -6,4 +6,5 @@ type Category struct {
 	ParentID *int64  `json:"parentId"`
 	Color    *string `json:"color"`
 	Ignore   *bool   `json:"ignore"`
+	Budget   *int64  `json:"budget"`
 }

@@ -21,12 +21,13 @@ func Update(c *gin.Context) {
 	}
 
 	err = database.Exec(
-		"UPDATE categories SET name = $2, color = $3, ignore = $5 WHERE user_id = $1 AND id = $4",
+		"UPDATE categories SET name = $2, color = $3, ignore = $5, budget = $6 WHERE user_id = $1 AND id = $4",
 		sub,
 		category.Name,
 		category.Color,
 		category.ID,
 		category.Ignore,
+		category.Budget,
 	)
 	if err != nil {
 		utils.InternalServerError(c, fmt.Errorf("insert failed: %w", err))
