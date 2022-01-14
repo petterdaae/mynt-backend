@@ -13,7 +13,8 @@ create table budget_items (
     budget_id integer,
     category_id integer,
     negative_amount integer,
-    positive_amount integer
+    positive_amount integer,
+    name text
 );
 
 -- +migrate Down
