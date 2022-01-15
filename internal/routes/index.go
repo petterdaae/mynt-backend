@@ -4,6 +4,8 @@ import (
 	"backend/internal/middleware"
 	"backend/internal/routes/accounts"
 	"backend/internal/routes/auth"
+	"backend/internal/routes/budgetitems"
+	"backend/internal/routes/budgets"
 	"backend/internal/routes/categories"
 	"backend/internal/routes/categorizations"
 	"backend/internal/routes/synchronize"
@@ -65,15 +67,29 @@ func SetupRoutes(database *utils.Database) *gin.Engine {
 	r.GET("/authenticated", authGuard, authenticated)
 	r.PUT("/user/secrets/sbanken", authGuard, user.UpdateSbankenSecrets)
 	r.POST("/synchronize/sbanken", authGuard, synchronize.Sbanken)
+
 	r.GET("/transactions", authGuard, transactions.List)
 	r.PUT("/transactions", authGuard, transactions.Update)
+
 	r.GET("/categorizations", authGuard, categorizations.List)
 	r.PUT("/categorizations", authGuard, categorizations.UpdateCategorizationsForTransaction)
+
 	r.GET("/categories", authGuard, categories.List)
 	r.PUT("/categories", authGuard, categories.Update)
 	r.POST("/categories", authGuard, categories.Create)
 	r.DELETE("/categories", authGuard, categories.Delete)
+
 	r.GET("/accounts", authGuard, accounts.List)
+
+	r.GET("/budgets", authGuard, budgets.List)
+	r.POST("/budgets", authGuard, budgets.Create)
+	r.PUT("/budgets", authGuard, budgets.Update)
+	r.DELETE("/budgets", authGuard, budgets.Delete)
+
+	r.GET("budget_items", authGuard, budgetitems.List)
+	r.POST("budget_items", authGuard, budgetitems.Create)
+	r.PUT("budget_items", authGuard, budgetitems.Update)
+	r.DELETE("budget_items", authGuard, budgetitems.Delete)
 
 	return r
 }

@@ -77,5 +77,7 @@ func recursiveDelete(categoryID int64, sub string, database *utils.Database) err
 		return fmt.Errorf("failed to delete rows from categorizations: %w", err)
 	}
 
+	// TODO : Delete budget items?
+
 	return nil
 }
