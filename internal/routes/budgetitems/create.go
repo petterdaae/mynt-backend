@@ -9,8 +9,8 @@ import (
 )
 
 type CreateBudgetItemBody struct {
-	BudgetID       string `json:"name"`
-	CategoryID     string `json:"color"`
+	BudgetID       int64  `json:"budgetId"`
+	CategoryID     int64  `json:"categoryId"`
 	NegativeAmount int64  `json:"negativeAmount"`
 	PositiveAmount int64  `json:"positiveAmount"`
 	Name           string `json:"name"`

@@ -26,7 +26,7 @@ func Update(c *gin.Context) {
 			negative_amount = $1, 
 			positive_amount = $2,
 			category_id = $3,
-			name = $4,
+			name = $4
 		WHERE user_id = $5 AND id = $6`,
 		budget.NegativeAmount,
 		budget.PositiveAmount,
