@@ -31,15 +31,15 @@ func Delete(c *gin.Context) {
 
 	err = deleteBudgetItems(body.ID, sub, database)
 	if err != nil {
-		utils.InternalServerError(c, fmt.Errorf("error occured while deleting budget items: %w", err))
+		utils.InternalServerError(c, fmt.Errorf("error ocured while deleting budget items: %w", err))
 		return
 	}
 
 	c.Status(http.StatusOK)
 }
 
-func deleteBudgetItems(budgetId int64, sub string, database *utils.Database) error {
-	err := database.Exec("DELETE FROM budget_items WHERE budget_id = $1 AND user_id = $2", budgetId, sub)
+func deleteBudgetItems(budgetID int64, sub string, database *utils.Database) error {
+	err := database.Exec("DELETE FROM budget_items WHERE budget_id = $1 AND user_id = $2", budgetID, sub)
 	if err != nil {
 		return fmt.Errorf("failed to delete budget items: %w", err)
 	}

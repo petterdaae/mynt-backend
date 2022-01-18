@@ -27,15 +27,19 @@ func Create(c *gin.Context) {
 		return
 	}
 
-	var userIdOfBudget string
+	var userIDOfBudget string
 	row, err := database.QueryRow("SELECT user_id FROM budgets WHERE id = $1", body.BudgetID)
 	if err != nil {
 		utils.InternalServerError(c, fmt.Errorf("failed query budget: %w", err))
 		return
 	}
-	row.Scan(&userIdOfBudget)
+	err = row.Scan(&userIDOfBudget)
+	if err != nil {
+		utils.InternalServerError(c, fmt.Errorf("failed to scan userIdOfBudget: %w", err))
+		return
+	}
 
-	if userIdOfBudget != sub {
+	if userIDOfBudget != sub {
 		c.Status(http.StatusUnauthorized)
 		return
 	}
