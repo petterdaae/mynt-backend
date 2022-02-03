@@ -32,17 +32,5 @@ func Update(c *gin.Context) {
 		return
 	}
 
-	if budget.IsMainBudget {
-		err = database.Exec(
-			"UPDATE users SET main_budget = $1 WHERE user_id = $2",
-			budget.ID,
-			sub,
-		)
-		if err != nil {
-			utils.InternalServerError(c, fmt.Errorf("failed to update field main_budget in users: %w", err))
-			return
-		}
-	}
-
 	c.Status(http.StatusOK)
 }

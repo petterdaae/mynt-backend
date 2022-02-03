@@ -14,6 +14,10 @@ type CreateBudgetBody struct {
 	IsMainBudget bool   `json:"isMainBudget"`
 }
 
+type CreatedBudgetResponse struct {
+	ID int64 `json:"id"`
+}
+
 func Create(c *gin.Context) {
 	database, _ := c.MustGet("database").(*utils.Database)
 	sub := c.GetString("sub")
@@ -42,17 +46,9 @@ func Create(c *gin.Context) {
 		return
 	}
 
-	if body.IsMainBudget {
-		err = database.Exec(
-			"UPDATE users SET main_budget = $1 WHERE user_id = $2",
-			newBudgetID,
-			sub,
-		)
-		if err != nil {
-			utils.InternalServerError(c, fmt.Errorf("failed to update field main_budget in users: %w", err))
-			return
-		}
+	response := CreatedBudgetResponse{
+		ID: newBudgetID,
 	}
 
-	c.Status(http.StatusCreated)
+	c.JSON(http.StatusCreated, response)
 }

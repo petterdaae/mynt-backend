@@ -23,18 +23,6 @@ func List(c *gin.Context) {
 	}
 	defer rows.Close()
 
-	var mainBudgetID *int64
-	row, err := database.QueryRow("SELECT main_budget FROM users WHERE user_id = $1", sub)
-	if err != nil {
-		utils.InternalServerError(c, fmt.Errorf("failed to get main budget id: %w", err))
-		return
-	}
-	err = row.Scan(&mainBudgetID)
-	if err != nil {
-		utils.InternalServerError(c, fmt.Errorf("failed to scan main budget id: %w", err))
-		return
-	}
-
 	budgets := []types.Budget{}
 	for rows.Next() {
 		var budget types.Budget
@@ -43,7 +31,6 @@ func List(c *gin.Context) {
 			&budget.Name,
 			&budget.Color,
 		)
-		budget.IsMainBudget = mainBudgetID != nil && budget.ID == *mainBudgetID
 		if err != nil {
 			utils.InternalServerError(c, fmt.Errorf("failed to scan row: %w", err))
 			return

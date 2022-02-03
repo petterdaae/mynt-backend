@@ -17,6 +17,10 @@ type CreateCategoryBody struct {
 	Ignore   bool   `json:"ignore"`
 }
 
+type CreatedCategoryResponse struct {
+	ID int64 `json:"id"`
+}
+
 func Create(c *gin.Context) {
 	database, _ := c.MustGet("database").(*utils.Database)
 	sub := c.GetString("sub")
@@ -55,5 +59,9 @@ func Create(c *gin.Context) {
 		return
 	}
 
-	c.Status(http.StatusCreated)
+	response := CreatedCategoryResponse{
+		ID: id,
+	}
+
+	c.JSON(http.StatusCreated, response)
 }

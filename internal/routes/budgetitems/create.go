@@ -16,6 +16,10 @@ type CreateBudgetItemBody struct {
 	Name           string `json:"name"`
 }
 
+type CreatedBudgetResponse struct {
+	ID int64 `json:"id"`
+}
+
 func Create(c *gin.Context) {
 	database, _ := c.MustGet("database").(*utils.Database)
 	sub := c.GetString("sub")
@@ -44,10 +48,11 @@ func Create(c *gin.Context) {
 		return
 	}
 
-	err = database.Exec(
+	var newBudgetItemID int64
+	row, err = database.QueryRow(
 		`INSERT INTO budget_items 
 		(user_id, budget_id, category_id, negative_amount, positive_amount, name) 
-		VALUES ($1, $2, $3, $4, $5, $6)`,
+		VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
 		sub,
 		body.BudgetID,
 		body.CategoryID,
@@ -59,6 +64,15 @@ func Create(c *gin.Context) {
 		utils.InternalServerError(c, fmt.Errorf("failed to insert new budget_item: %w", err))
 		return
 	}
+	err = row.Scan(&newBudgetItemID)
+	if err != nil {
+		utils.InternalServerError(c, fmt.Errorf("failed to scan new budget item id: %w", err))
+		return
+	}
 
-	c.Status(http.StatusCreated)
+	response := CreatedBudgetResponse{
+		ID: newBudgetItemID,
+	}
+
+	c.JSON(http.StatusCreated, response)
 }
