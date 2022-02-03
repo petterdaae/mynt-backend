@@ -15,7 +15,10 @@ type CreateCategoryBody struct {
 	Color    string `json:"color"`
 	ParentID *int64 `json:"parentId"`
 	Ignore   bool   `json:"ignore"`
-	Budget   *int64 `json:"budget"`
+}
+
+type CreatedCategoryResponse struct {
+	ID int64 `json:"id"`
 }
 
 func Create(c *gin.Context) {
@@ -44,18 +47,21 @@ func Create(c *gin.Context) {
 
 	var id int64
 	err = connection.QueryRow(
-		"INSERT INTO categories (user_id, name, parent_id, color, ignore, budget) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
+		"INSERT INTO categories (user_id, name, parent_id, color, ignore) VALUES ($1, $2, $3, $4, $5) RETURNING id",
 		sub,
 		category.Name,
-		category.ParentID,
+		category.ParentID, // TODO : Check that parent id exists for user
 		category.Color,
 		category.Ignore,
-		category.Budget,
 	).Scan(&id)
 	if err != nil {
 		utils.InternalServerError(c, fmt.Errorf("insert failed: %w", err))
 		return
 	}
 
-	c.Status(http.StatusCreated)
+	response := CreatedCategoryResponse{
+		ID: id,
+	}
+
+	c.JSON(http.StatusCreated, response)
 }

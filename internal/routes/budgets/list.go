@@ -17,7 +17,6 @@ func List(c *gin.Context) {
 		"SELECT id, name, color FROM budgets WHERE user_id = $1 ORDER BY name, id",
 		sub,
 	)
-
 	if err != nil {
 		utils.InternalServerError(c, fmt.Errorf("failed to query budgets: %w", err))
 		return

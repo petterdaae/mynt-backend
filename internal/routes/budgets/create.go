@@ -9,8 +9,13 @@ import (
 )
 
 type CreateBudgetBody struct {
-	Name  string `json:"name"`
-	Color string `json:"color"`
+	Name         string `json:"name"`
+	Color        string `json:"color"`
+	IsMainBudget bool   `json:"isMainBudget"`
+}
+
+type CreatedBudgetResponse struct {
+	ID int64 `json:"id"`
 }
 
 func Create(c *gin.Context) {
@@ -24,8 +29,9 @@ func Create(c *gin.Context) {
 		return
 	}
 
-	err = database.Exec(
-		"INSERT INTO budgets (user_id, name, color) VALUES ($1, $2, $3)",
+	var newBudgetID int64
+	row, err := database.QueryRow(
+		"INSERT INTO budgets (user_id, name, color) VALUES ($1, $2, $3) RETURNING id",
 		sub,
 		body.Name,
 		body.Color,
@@ -34,6 +40,15 @@ func Create(c *gin.Context) {
 		utils.InternalServerError(c, fmt.Errorf("failed to insert new budget: %w", err))
 		return
 	}
+	err = row.Scan(&newBudgetID)
+	if err != nil {
+		utils.InternalServerError(c, fmt.Errorf("failed to scan new budget id: %w", err))
+		return
+	}
 
-	c.Status(http.StatusCreated)
+	response := CreatedBudgetResponse{
+		ID: newBudgetID,
+	}
+
+	c.JSON(http.StatusCreated, response)
 }
