@@ -244,7 +244,7 @@ func getTransactions(accessToken, accountID string) (*sbankenTransactions, error
 	request, err := http.NewRequestWithContext(
 		c,
 		"GET",
-		"https://publicapi.sbanken.no/apibeta/api/v1/transactions/archive/"+accountID+"?startDate=2021-05-01&length=1000",
+		"https://publicapi.sbanken.no/apibeta/api/v1/transactions/archive/"+accountID+"?startDate=2022-01-01&length=1000",
 		nil,
 	)
 	if err != nil {
