@@ -9,11 +9,12 @@ import (
 )
 
 type CreateBudgetItemBody struct {
-	BudgetID       int64  `json:"budgetId"`
-	CategoryID     int64  `json:"categoryId"`
-	NegativeAmount *int64 `json:"negativeAmount"`
-	PositiveAmount *int64 `json:"positiveAmount"`
-	Name           string `json:"name"`
+	BudgetID      int64   `json:"budgetId"`
+	CategoryID    int64   `json:"categoryId"`
+	MonthlyAmount *int64  `json:"monthlyAmount"`
+	CustomItems   *string `json:"customItems"`
+	Name          string  `json:"name"`
+	Kind          string  `json:"kind"`
 }
 
 type CreatedBudgetResponse struct {
@@ -51,14 +52,15 @@ func Create(c *gin.Context) {
 	var newBudgetItemID int64
 	row, err = database.QueryRow(
 		`INSERT INTO budget_items 
-		(user_id, budget_id, category_id, negative_amount, positive_amount, name) 
-		VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+		(user_id, budget_id, category_id, monthly_amount, name, kind, custom_items) 
+		VALUES ($1, $2, $3, $4, $5) RETURNING id`,
 		sub,
 		body.BudgetID,
 		body.CategoryID,
-		body.NegativeAmount,
-		body.PositiveAmount,
+		body.MonthlyAmount,
 		body.Name,
+		body.Kind,
+		body.CustomItems,
 	)
 	if err != nil {
 		utils.InternalServerError(c, fmt.Errorf("failed to insert new budget_item: %w", err))
