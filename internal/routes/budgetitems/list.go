@@ -14,7 +14,7 @@ func List(c *gin.Context) {
 	sub := c.GetString("sub")
 
 	rows, err := database.Query(
-		"SELECT id, budget_id, category_id, negative_amount, positive_amount, name "+
+		"SELECT id, budget_id, category_id, monthly_amount, name "+
 			"FROM budget_items WHERE user_id = $1",
 		sub,
 	)
@@ -32,8 +32,7 @@ func List(c *gin.Context) {
 			&budgetItem.ID,
 			&budgetItem.BudgetID,
 			&budgetItem.CategoryID,
-			&budgetItem.NegativeAmount,
-			&budgetItem.PositiveAmount,
+			&budgetItem.MonthlyAmount,
 			&budgetItem.Name,
 		)
 		if err != nil {
