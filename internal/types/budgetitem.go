@@ -1,13 +1,13 @@
 package types
 
 type BudgetItem struct {
-	ID            int64                   `json:"id"`
-	BudgetID      int64                   `json:"budgetId"`
-	Kind          string                  `json:"kind"`
-	CategoryID    int64                   `json:"categoryId"`
-	MonthlyAmount *int64                  `json:"monthlyAmount"`
-	CustomItems   *[]BudgetItemCustomItem `json:"customItems"`
-	Name          string                  `json:"name"`
+	ID            int64   `json:"id"`
+	BudgetID      int64   `json:"budgetId"`
+	Kind          string  `json:"kind"`
+	CategoryID    int64   `json:"categoryId"`
+	MonthlyAmount *int64  `json:"monthlyAmount"`
+	CustomItems   *string `json:"customItems"`
+	Name          string  `json:"name"`
 }
 
 type BudgetItemCustomItem struct {

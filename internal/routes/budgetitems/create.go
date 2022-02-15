@@ -53,7 +53,7 @@ func Create(c *gin.Context) {
 	row, err = database.QueryRow(
 		`INSERT INTO budget_items 
 		(user_id, budget_id, category_id, monthly_amount, name, kind, custom_items) 
-		VALUES ($1, $2, $3, $4, $5) RETURNING id`,
+		VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
 		sub,
 		body.BudgetID,
 		body.CategoryID,

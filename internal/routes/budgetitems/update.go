@@ -25,13 +25,17 @@ func Update(c *gin.Context) {
 		SET 
 			monthly_amount = $1, 
 			category_id = $2,
-			name = $3
+			name = $3,
+			kind = $6,
+			custom_items = $7
 		WHERE user_id = $4 AND id = $5`,
 		budget.MonthlyAmount,
 		budget.CategoryID,
 		budget.Name,
 		sub,
 		budget.ID,
+		budget.Kind,
+		budget.CustomItems,
 	)
 	if err != nil {
 		utils.InternalServerError(c, fmt.Errorf("update budget_items failed: %w", err))
