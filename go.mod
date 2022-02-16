@@ -1,6 +1,6 @@
 module backend
 
-go 1.18
+go 1.14
 
 require (
 	github.com/coreos/go-oidc/v3 v3.0.0
