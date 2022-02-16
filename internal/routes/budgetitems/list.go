@@ -14,7 +14,7 @@ func List(c *gin.Context) {
 	sub := c.GetString("sub")
 
 	rows, err := database.Query(
-		"SELECT id, budget_id, category_id, negative_amount, positive_amount, name "+
+		"SELECT id, budget_id, category_id, monthly_amount, name, custom_items, kind "+
 			"FROM budget_items WHERE user_id = $1",
 		sub,
 	)
@@ -32,9 +32,10 @@ func List(c *gin.Context) {
 			&budgetItem.ID,
 			&budgetItem.BudgetID,
 			&budgetItem.CategoryID,
-			&budgetItem.NegativeAmount,
-			&budgetItem.PositiveAmount,
+			&budgetItem.MonthlyAmount,
 			&budgetItem.Name,
+			&budgetItem.CustomItems,
+			&budgetItem.Kind,
 		)
 		if err != nil {
 			utils.InternalServerError(c, fmt.Errorf("failed to scan row: %w", err))
