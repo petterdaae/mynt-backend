@@ -3,7 +3,7 @@ package user
 import (
 	"backend/internal/utils"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -18,7 +18,7 @@ func UpdateSbankenSecrets(c *gin.Context) {
 	sub, _ := c.MustGet("sub").(string)
 	database, _ := c.MustGet("database").(*utils.Database)
 
-	body, err := ioutil.ReadAll(c.Request.Body)
+	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		utils.InternalServerError(c, err)
 		return

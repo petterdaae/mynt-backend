@@ -4,7 +4,7 @@ import (
 	"backend/internal/utils"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -32,7 +32,7 @@ func Create(c *gin.Context) {
 	}
 	defer connection.Close()
 
-	body, err := ioutil.ReadAll(c.Request.Body)
+	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		utils.InternalServerError(c, fmt.Errorf("failed to read body: %w", err))
 		return
