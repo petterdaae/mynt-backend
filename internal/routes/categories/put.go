@@ -2,6 +2,7 @@ package categories
 
 import (
 	"backend/internal/resources/categories"
+	"backend/internal/types"
 	"backend/internal/utils"
 	"fmt"
 	"net/http"
@@ -10,13 +11,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type DeleteCategoryBody struct {
-	ID int64 `json:"id"`
-}
-
-func Delete(c *gin.Context) {
+func Put(c *gin.Context) {
 	database, _ := c.MustGet("database").(*utils.Database)
 	sub := c.GetString("sub")
+
+	var draftCategory types.DraftCategory
+	err := utils.ParseBody(c, &draftCategory)
+	if err != nil {
+		utils.InternalServerError(c, fmt.Errorf("failed to parse body: %w", err))
+		return
+	}
 
 	resource := categories.Configure(sub, database)
 
@@ -27,10 +31,10 @@ func Delete(c *gin.Context) {
 		return
 	}
 
-	err = resource.Delete(int64(categoryID))
+	err = resource.Update(int64(categoryID), draftCategory)
 
 	if err != nil {
-		utils.InternalServerError(c, fmt.Errorf("failed to delete category: %w", err))
+		utils.InternalServerError(c, fmt.Errorf("failed to insert category: %w", err))
 		return
 	}
 
