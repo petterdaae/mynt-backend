@@ -1,11 +1,15 @@
 package sbanken
 
+import "backend/internal/utils"
+
 type Resource struct {
-	sub string
+	sub      string
+	database *utils.Database
 }
 
-func Configure(sub string) Resource {
+func Configure(sub string, database *utils.Database) Resource {
 	return Resource{
-		sub: sub,
+		sub:      sub,
+		database: database,
 	}
 }

@@ -1,6 +1,8 @@
 package sbanken
 
 import (
+	"backend/internal/resources/user"
+	"backend/internal/types"
 	"backend/internal/utils"
 	"bytes"
 	"context"
@@ -11,9 +13,29 @@ import (
 	"net/url"
 )
 
-func (resource *Resource) GetAccessToken(clientID, clientSecret string) (string, error) {
+func (resource *Resource) GetAccessToken() (string, error) {
+	userResource := user.Configure(resource.sub, resource.database)
+	userInfo, err := userResource.Read()
+	if err != nil {
+		return "", fmt.Errorf("failed to read user: %w", err)
+	}
+
 	c := context.TODO()
 
+	request, err := buildRequest(c, userInfo)
+	if err != nil {
+		return "", fmt.Errorf("failed to build request: %w", err)
+	}
+
+	response, err := sendRequest(request)
+	if err != nil {
+		return "", fmt.Errorf("request failed: %w", err)
+	}
+
+	return readResponse(response)
+}
+
+func buildRequest(c context.Context, userInfo types.User) (*http.Request, error) {
 	// Build request
 	request, err := http.NewRequestWithContext(
 		c,
@@ -22,26 +44,38 @@ func (resource *Resource) GetAccessToken(clientID, clientSecret string) (string,
 		bytes.NewBuffer([]byte("grant_type=client_credentials")),
 	)
 	if err != nil {
-		return "", fmt.Errorf("failed to build request: %w", err)
+		return nil, fmt.Errorf("failed to build request: %w", err)
 	}
 
 	request.Header.Set("Accept", "application/json")
-	request.Header.Set("Authorization", authHeader(clientID, clientSecret))
+	request.Header.Set("Authorization", authHeader(userInfo.SbankenClientID, userInfo.SbankenClientSecret))
 	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	// Send request
+	return request, nil
+}
+
+func authHeader(clientID, clientSecret string) string {
+	return "Basic " + utils.Base64Encode(
+		url.QueryEscape(clientID)+":"+url.QueryEscape(clientSecret),
+	) + "=="
+}
+
+func sendRequest(request *http.Request) (*http.Response, error) {
 	response, err := http.DefaultClient.Do(request)
 	if err != nil {
-		return "", fmt.Errorf("failed to send request: %w", err)
+		return nil, fmt.Errorf("failed to send request: %w", err)
 	}
 	defer response.Body.Close()
 
-	// Check response
 	if response.StatusCode != http.StatusOK {
 		responseBodyBytes, _ := io.ReadAll(response.Body)
-		return "", fmt.Errorf("unexpected status code: (%v, %v)", response.StatusCode, string(responseBodyBytes))
+		return nil, fmt.Errorf("unexpected status code: (%v, %v)", response.StatusCode, string(responseBodyBytes))
 	}
 
+	return response, nil
+}
+
+func readResponse(response *http.Response) (string, error) {
 	responseBodyBytes, err := io.ReadAll(response.Body)
 	if err != nil {
 		return "", fmt.Errorf("failed to read response body: %w", err)
@@ -60,10 +94,4 @@ func (resource *Resource) GetAccessToken(clientID, clientSecret string) (string,
 	}
 
 	return accessToken, nil
-}
-
-func authHeader(clientID, clientSecret string) string {
-	return "Basic " + utils.Base64Encode(
-		url.QueryEscape(clientID)+":"+url.QueryEscape(clientSecret),
-	) + "=="
 }
