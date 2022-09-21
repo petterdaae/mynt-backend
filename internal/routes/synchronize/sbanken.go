@@ -1,6 +1,7 @@
 package synchronize
 
 import (
+	"backend/internal/resources/sbanken"
 	"backend/internal/utils"
 	"bytes"
 	"context"
@@ -13,19 +14,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 )
-
-type sbankenAccounts struct {
-	AvailableItems int
-	Items          []sbankenAccount
-}
-
-type sbankenAccount struct {
-	AccountID     string `json:"AccountId"`
-	AccountNumber string
-	Name          string
-	Available     float64
-	Balance       float64
-}
 
 type sbankenTransactions struct {
 	AvailableItems int
@@ -43,6 +31,8 @@ type sbankenTransaction struct {
 func Sbanken(c *gin.Context) {
 	sub := c.GetString("sub")
 	database, _ := c.MustGet("database").(*utils.Database)
+
+	sbankenResource := sbanken.Configure(sub, database)
 
 	// Connect to database
 	connection, err := database.Connect()
@@ -82,7 +72,7 @@ func Sbanken(c *gin.Context) {
 		return
 	}
 
-	accounts, err := getAccounts(accessToken)
+	accounts, err := sbankenResource.GetAccounts()
 	if err != nil {
 		utils.InternalServerError(c, fmt.Errorf("failed to get sbanken accounts: %w", err))
 		return
@@ -193,49 +183,6 @@ func authHeader(clientID, clientSecret string) string {
 	return "Basic " + utils.Base64Encode(
 		url.QueryEscape(clientID)+":"+url.QueryEscape(clientSecret),
 	) + "=="
-}
-
-func getAccounts(accessToken string) (*sbankenAccounts, error) {
-	c := context.TODO()
-
-	// Build request
-	request, err := http.NewRequestWithContext(
-		c,
-		"GET",
-		"https://publicapi.sbanken.no/apibeta/api/v1/Accounts",
-		http.NoBody,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("failed to build request: %w", err)
-	}
-	request.Header.Set("Authorization", "Bearer "+accessToken)
-	request.Header.Set("Accept", "application/json")
-
-	// Send request
-	response, err := http.DefaultClient.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("failed to send request: %w", err)
-	}
-	defer response.Body.Close()
-
-	// Check response
-	if response.StatusCode != http.StatusOK {
-		responseBodyBytes, _ := io.ReadAll(response.Body)
-		return nil, fmt.Errorf("unexpected status code: (%v, %v)", response.StatusCode, string(responseBodyBytes))
-	}
-
-	responseBodyBytes, err := io.ReadAll(response.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %w", err)
-	}
-
-	var responseBody sbankenAccounts
-	err = json.Unmarshal(responseBodyBytes, &responseBody)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse response body: %w", err)
-	}
-
-	return &responseBody, nil
 }
 
 func getTransactions(accessToken, accountID, sub string, database *utils.Database) (*sbankenTransactions, error) {

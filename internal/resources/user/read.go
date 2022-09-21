@@ -13,7 +13,7 @@ func (resource *Resource) Read() (types.User, error) {
 		FROM 
 			users
 		WHERE 
-			sub = $1
+			id = $1
 		`,
 		resource.sub,
 	)

@@ -31,6 +31,7 @@ func (resource *Resource) GetAccessToken() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("request failed: %w", err)
 	}
+	defer response.Body.Close()
 
 	return readResponse(response)
 }
@@ -64,7 +65,6 @@ func sendRequest(request *http.Request) (*http.Response, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to send request: %w", err)
 	}
-	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
 		responseBodyBytes, _ := io.ReadAll(response.Body)
