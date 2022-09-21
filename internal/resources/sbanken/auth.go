@@ -36,7 +36,6 @@ func (resource *Resource) GetAccessToken() (string, error) {
 }
 
 func buildRequest(c context.Context, userInfo types.User) (*http.Request, error) {
-	// Build request
 	request, err := http.NewRequestWithContext(
 		c,
 		"POST",
