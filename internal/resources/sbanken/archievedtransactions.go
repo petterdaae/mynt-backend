@@ -16,7 +16,7 @@ func (resource *Resource) GetArchievedTransactions(accountID string) (*Archieved
 		return nil, fmt.Errorf("failed to get access token: %w", err)
 	}
 
-	startDate, err := getTransactionsStartDateParameter(nil, resource.sub)
+	startDate, err := getTransactionsStartDateParameter(resource.database, resource.sub)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get transactions start date parameter: %w", err)
 	}
