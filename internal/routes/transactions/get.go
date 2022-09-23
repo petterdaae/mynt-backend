@@ -13,7 +13,9 @@ func Get(c *gin.Context) {
 	sub := c.GetString("sub")
 	resource := transactions.Configure(sub, database)
 
-	result, err := resource.List(c.Query("from"), c.Query("to"))
+	from := c.Query("from_date")
+	to := c.Query("to_date")
+	result, err := resource.List(from, to)
 
 	if err != nil {
 		utils.InternalServerError(c, err)

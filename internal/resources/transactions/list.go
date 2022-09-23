@@ -18,7 +18,7 @@ func (resource *Resource) List(from, to string) ([]types.Transaction, error) {
     	FROM
         	transactions as t
     	WHERE
-        		t.user_id = $1
+				t.user_id = $1
         	AND split_part(coalesce(t.custom_date, t.accounting_date), 'T', 1) >= $2
         	AND split_part(coalesce(t.custom_date, t.accounting_date), 'T', 1) <= $3
     	ORDER BY
