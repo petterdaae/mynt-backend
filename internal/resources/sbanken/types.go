@@ -12,3 +12,16 @@ type Account struct {
 	Available     float64
 	Balance       float64
 }
+
+type ArchievedTransactions struct {
+	AvailableItems int
+	Items          []ArchievedTransaction
+}
+
+type ArchievedTransaction struct {
+	TransactionID  string `json:"TransactionId"`
+	AccountingDate string
+	InterestDate   string
+	Amount         float64
+	Text           string
+}

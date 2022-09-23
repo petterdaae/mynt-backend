@@ -62,7 +62,6 @@ func SetupRoutes(database *utils.Database) *gin.Engine {
 
 	// Unauthenticated
 	r.GET("/health", health)
-	r.POST("/demo/reset", synchronize.ResetDemoAccount)
 
 	// Authenticated
 	authGuard := middleware.Auth(database)
