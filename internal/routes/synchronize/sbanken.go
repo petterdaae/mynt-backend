@@ -2,6 +2,8 @@ package synchronize
 
 import (
 	"backend/internal/resources/sbanken"
+	tResource "backend/internal/resources/transactions"
+	"backend/internal/types"
 	"backend/internal/utils"
 	"fmt"
 	"net/http"
@@ -14,6 +16,7 @@ func Sbanken(c *gin.Context) {
 	database, _ := c.MustGet("database").(*utils.Database)
 
 	sbankenResource := sbanken.Configure(sub, database)
+	transactionsResource := tResource.Configure(sub, database)
 
 	// Connect to database
 	connection, err := database.Connect()
@@ -22,29 +25,6 @@ func Sbanken(c *gin.Context) {
 		return
 	}
 	defer connection.Close()
-
-	// Get client id and secret
-	var clientID string
-	var clientSecret string
-	rows, err := connection.Query("SELECT sbanken_client_id, sbanken_client_secret FROM users WHERE id = $1", sub)
-	if err != nil {
-		utils.InternalServerError(c, fmt.Errorf("query for sbanken credentials failed: %w", err))
-		return
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		err = rows.Scan(&clientID, &clientSecret)
-		if err != nil {
-			utils.InternalServerError(c, fmt.Errorf("parsing query result for sbanken credentials failed: %w", err))
-			return
-		}
-	}
-
-	if clientID == "" || clientSecret == "" {
-		utils.Unauthorized(c, fmt.Errorf("missing credentials: client id or client secret is blank"))
-		return
-	}
 
 	accounts, err := sbankenResource.GetAccounts()
 	if err != nil {
@@ -73,27 +53,22 @@ func Sbanken(c *gin.Context) {
 
 		transactions, err := sbankenResource.GetArchievedTransactions(account.AccountID)
 		if err != nil {
-			utils.InternalServerError(c, fmt.Errorf("failed to get sbanken transactions: %w", err))
+			utils.InternalServerError(c, fmt.Errorf("failed to get arhieved transactions from sbanken: %w", err))
 			return
 		}
 
 		for _, transaction := range transactions.Items {
-			_, err := connection.Exec(
-				"INSERT INTO transactions (id, user_id, account_id, external_id, accounting_date, interest_date, amount, text) "+
-					"VALUES ($1, $2, $3, $4, $5, $6, $7, $8) "+
-					"ON CONFLICT (id) DO NOTHING",
-				"sbanken:"+transaction.TransactionID,
-				sub,
-				"sbanken:"+account.AccountID,
-				transaction.TransactionID,
-				transaction.AccountingDate,
-				transaction.InterestDate,
-				utils.CurrencyToInt(transaction.Amount),
-				transaction.Text,
-			)
+			err := transactionsResource.CreateIfNotExists(&types.Transaction{
+				ID:             "sbanken:" + transaction.TransactionID,
+				AccountID:      "sbanken:" + account.AccountID,
+				AccountingDate: transaction.AccountingDate,
+				InterestDate:   transaction.InterestDate,
+				Amount:         int64(utils.CurrencyToInt(transaction.Amount)),
+				Text:           transaction.Text,
+			})
 
 			if err != nil {
-				utils.InternalServerError(c, fmt.Errorf("failed to insert sbanken transaction: %w", err))
+				utils.InternalServerError(c, fmt.Errorf("failed to create transaction: %w", err))
 				return
 			}
 		}
