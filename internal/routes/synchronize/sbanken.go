@@ -1,6 +1,7 @@
 package synchronize
 
 import (
+	aResource "backend/internal/resources/accounts"
 	"backend/internal/resources/sbanken"
 	tResource "backend/internal/resources/transactions"
 	"backend/internal/types"
@@ -17,14 +18,7 @@ func Sbanken(c *gin.Context) {
 
 	sbankenResource := sbanken.Configure(sub, database)
 	transactionsResource := tResource.Configure(sub, database)
-
-	// Connect to database
-	connection, err := database.Connect()
-	if err != nil {
-		utils.InternalServerError(c, fmt.Errorf("database connection failed: %w", err))
-		return
-	}
-	defer connection.Close()
+	accountsResource := aResource.Configure(sub, database)
 
 	accounts, err := sbankenResource.GetAccounts()
 	if err != nil {
@@ -32,22 +26,17 @@ func Sbanken(c *gin.Context) {
 		return
 	}
 
-	// Update accounts and transactions
 	for _, account := range accounts.Items {
-		_, err := connection.Exec(
-			"INSERT INTO accounts (id, user_id, external_id, account_number, name, available, balance) VALUES ($1, $2, $3, $4, $5, $6, $7) "+
-				"ON CONFLICT (id) DO UPDATE SET name = $5, available = $6, balance = $7",
-			"sbanken:"+account.AccountID,
-			sub,
-			account.AccountID,
-			account.AccountNumber,
-			account.Name,
-			utils.CurrencyToInt(account.Available),
-			utils.CurrencyToInt(account.Balance),
-		)
+		err = accountsResource.CreateIfNotExists(&types.Account{
+			ID:            "sbanken:" + account.AccountID,
+			AccountNumber: account.AccountNumber,
+			Name:          account.Name,
+			Available:     utils.CurrencyToInt(account.Available),
+			Balance:       utils.CurrencyToInt(account.Balance),
+		})
 
 		if err != nil {
-			utils.InternalServerError(c, fmt.Errorf("failed to insert sbanken account: %w", err))
+			utils.InternalServerError(c, fmt.Errorf("failed to account: %w", err))
 			return
 		}
 
