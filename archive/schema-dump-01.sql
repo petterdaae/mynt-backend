@@ -60,14 +60,11 @@ create table budgets
     color   text
 );
 
-alter table budgets
-    owner to postgres;
-
 create table budget_items
 (
     id             serial
         primary key,
-    user_id        text,
+    user_id        text, -- TODO: remove field
     budget_id      integer,
     category_id    integer,
     name           text,
