@@ -2,6 +2,7 @@ package synchronize
 
 import (
 	aResource "backend/internal/resources/accounts"
+	itResource "backend/internal/resources/incomingtransactions"
 	"backend/internal/resources/sbanken"
 	tResource "backend/internal/resources/transactions"
 	"backend/internal/types"
@@ -19,6 +20,7 @@ func Sbanken(c *gin.Context) {
 	sbankenResource := sbanken.Configure(sub, database)
 	transactionsResource := tResource.Configure(sub, database)
 	accountsResource := aResource.Configure(sub, database)
+	incomingTransactionsResource := itResource.Configure(sub, database)
 
 	accounts, err := sbankenResource.GetAccounts()
 	if err != nil {
@@ -47,7 +49,7 @@ func Sbanken(c *gin.Context) {
 		}
 
 		for _, transaction := range transactions.Items {
-			err := transactionsResource.CreateIfNotExists(&types.Transaction{
+			err = transactionsResource.CreateIfNotExists(&types.Transaction{
 				ID:             "sbanken:" + transaction.TransactionID,
 				AccountID:      "sbanken:" + account.AccountID,
 				AccountingDate: transaction.AccountingDate,
@@ -58,6 +60,33 @@ func Sbanken(c *gin.Context) {
 
 			if err != nil {
 				utils.InternalServerError(c, fmt.Errorf("failed to create transaction: %w", err))
+				return
+			}
+		}
+
+		incomingTransactions, err := sbankenResource.GetIncomingTransactions(account.AccountID)
+		if err != nil {
+			utils.InternalServerError(c, fmt.Errorf("failed to get incoming transactions from sbanken: %w", err))
+			return
+		}
+
+		err = incomingTransactionsResource.DeleteAll(account.AccountID)
+		if err != nil {
+			utils.InternalServerError(c, fmt.Errorf("failed to clear incoming transactions table: %w", err))
+			return
+		}
+
+		for _, transaction := range incomingTransactions {
+			_, err := incomingTransactionsResource.Create(&types.DraftIncomingTransaction{
+				AccountID:      "sbanken:" + account.AccountID,
+				AccountingDate: transaction.AccountingDate,
+				InterestDate:   transaction.InterestDate,
+				Amount:         int64(utils.CurrencyToInt(transaction.Amount)),
+				Text:           transaction.Text,
+			})
+
+			if err != nil {
+				utils.InternalServerError(c, fmt.Errorf("failed to create incoming transaction: %w", err))
 				return
 			}
 		}
