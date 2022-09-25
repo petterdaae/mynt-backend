@@ -25,3 +25,17 @@ type ArchievedTransaction struct {
 	Amount         float64
 	Text           string
 }
+
+type IncomingTransactions struct {
+	AvailableItems int
+	Items          []IncomingTransaction
+}
+
+type IncomingTransaction struct {
+	AccountingDate  string
+	InterestDate    string
+	Amount          float64
+	Text            string
+	IsReservation   bool
+	ReservationType string
+}
