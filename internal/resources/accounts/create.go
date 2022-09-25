@@ -16,7 +16,9 @@ func (resource Resource) CreateIfNotExists(account *types.Account) error {
 			balance
 		) VALUES (
 			$1, $2, $3, $4, $5, $6
-		) ON CONFLICT DO NOTHING
+		) ON CONFLICT (id) DO UPDATE SET
+			available = $5,
+			balance = $6
 		`,
 		resource.sub,
 		account.ID,
