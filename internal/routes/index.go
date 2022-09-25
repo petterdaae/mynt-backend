@@ -8,6 +8,7 @@ import (
 	"backend/internal/routes/budgets"
 	"backend/internal/routes/categories"
 	"backend/internal/routes/categorizations"
+	"backend/internal/routes/incomingtransactions"
 	"backend/internal/routes/names"
 	"backend/internal/routes/settings"
 	"backend/internal/routes/synchronize"
@@ -99,6 +100,8 @@ func SetupRoutes(database *utils.Database) *gin.Engine {
 	r.POST("/names", authGuard, names.Create)
 	r.PUT("/names", authGuard, names.Update)
 	r.DELETE("/names", authGuard, names.Delete)
+
+	r.GET("/incomingtransactions", authGuard, incomingtransactions.Get)
 
 	return r
 }
