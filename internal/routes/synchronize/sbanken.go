@@ -70,7 +70,7 @@ func Sbanken(c *gin.Context) {
 			return
 		}
 
-		err = incomingTransactionsResource.DeleteAll(account.AccountID)
+		err = incomingTransactionsResource.DeleteAll("sbanken:" + account.AccountID)
 		if err != nil {
 			utils.InternalServerError(c, fmt.Errorf("failed to clear incoming transactions table: %w", err))
 			return
