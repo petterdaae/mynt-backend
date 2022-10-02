@@ -34,6 +34,7 @@ Mynt is a web-application for personal finance. This repository contains the bac
 - POSTGRES_PASSWORD
 - POSTGRES_DB
 - POSTGRES_SSL
+- RUN_CRON_JOBS: true (syncrhonizes accounts regularly with sbanken)
 
 ## Deployment
 
