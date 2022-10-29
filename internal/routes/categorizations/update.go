@@ -34,13 +34,13 @@ func UpdateCategorizationsForTransaction(c *gin.Context) {
 		return
 	}
 
-	err = RemoveOldCategorizations(database, sub, transaction.ID)
+	err = ValidateCategorizations(body, transaction)
 	if err != nil {
 		utils.BadRequest(c, err)
 		return
 	}
 
-	err = ValidateCategorizations(body, transaction)
+	err = RemoveOldCategorizations(database, sub, transaction.ID)
 	if err != nil {
 		utils.BadRequest(c, err)
 		return
@@ -71,6 +71,11 @@ func RemoveOldCategorizations(databse *utils.Database, sub, transactionID string
 
 func ValidateCategorizations(body RequestBody, transaction *types.Transaction) error {
 	var sum int64
+
+	if len(body.Categorizations) == 0 {
+		return nil
+	}
+
 	for _, categorization := range body.Categorizations {
 		sum += categorization.Amount
 	}
