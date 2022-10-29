@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"backend/internal/jobs"
 	internal "backend/internal/routes"
 	utils "backend/internal/utils"
 	"fmt"
@@ -13,6 +12,7 @@ import (
 // Execute is the main entry point of this application
 func Execute() {
 	log.SetOutput(os.Stdout)
+	log.SetFormatter(&log.JSONFormatter{})
 
 	database := utils.InitDatabase()
 
@@ -26,12 +26,10 @@ func Execute() {
 		log.Fatal(fmt.Errorf("database migration failed: %w", err))
 	}
 
-	// Jobs
-	jobs.Schedule()
-
-	// REST api
 	r := internal.SetupRoutes(database)
+
 	err = r.Run(fmt.Sprintf(":%s", os.Getenv("PORT")))
+
 	if err != nil {
 		panic(err)
 	}
