@@ -6,4 +6,5 @@ type Account struct {
 	Name          string `json:"name"`
 	Available     int    `json:"available"`
 	Balance       int    `json:"balance"`
+	Favorite      bool   `json:"favorite"`
 }

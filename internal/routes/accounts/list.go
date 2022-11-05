@@ -20,7 +20,7 @@ func List(c *gin.Context) {
 	}
 	defer connection.Close()
 
-	rows, err := connection.Query("SELECT id, account_number, name, available, balance FROM accounts WHERE user_id = $1", sub)
+	rows, err := connection.Query("SELECT id, account_number, name, available, balance, favorite FROM accounts WHERE user_id = $1", sub)
 	if err != nil {
 		utils.InternalServerError(c, fmt.Errorf("database query failed: %w", err))
 		return
@@ -31,7 +31,7 @@ func List(c *gin.Context) {
 
 	for rows.Next() {
 		var account types.Account
-		err := rows.Scan(&account.ID, &account.AccountNumber, &account.Name, &account.Available, &account.Balance)
+		err := rows.Scan(&account.ID, &account.AccountNumber, &account.Name, &account.Available, &account.Balance, &account.Favorite)
 		if err != nil {
 			utils.InternalServerError(c, fmt.Errorf("database scan failed: %w", err))
 			return
