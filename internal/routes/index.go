@@ -82,6 +82,7 @@ func SetupRoutes(database *utils.Database) *gin.Engine {
 	r.DELETE("/categories/:category_id", authGuard, categories.Delete)
 
 	r.GET("/accounts", authGuard, accounts.List)
+	r.PUT("/accounts", authGuard, accounts.Update)
 
 	r.GET("/budgets", authGuard, budgets.List)
 	r.POST("/budgets", authGuard, budgets.Create)
