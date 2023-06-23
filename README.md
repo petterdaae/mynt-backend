@@ -35,10 +35,6 @@ Mynt is a web-application for personal finance. This repository contains the bac
 - POSTGRES_DB
 - POSTGRES_SSL
 
-## Deployment
-
-The master branch is automatically deployed to [https://api.mynt.daae.dev](https://api.mynt.daae.dev) in digital ocean.
-
 ## Authentication
 
 - We currently use google for authentication.
